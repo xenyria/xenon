@@ -1,18 +1,12 @@
-/*
- * Copyright (c) 2025 Pixelground Labs - All Rights Reserved.
- * Unauthorized copying or redistribution of this file in source and binary forms via any medium
- * is strictly prohibited.
- */
-
-package net.xenyria.xenon.discord
+package net.xenyria
 
 import de.jcm.discordgamesdk.Core
 import de.jcm.discordgamesdk.CreateParams
 import de.jcm.discordgamesdk.activity.Activity
 import de.jcm.discordgamesdk.activity.ActivityType
+import net.xenyria.xenon.discord.ActivityData
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
 
 class DiscordAPI {
 
@@ -67,12 +61,12 @@ class DiscordAPI {
         }
         val activity = Activity()
         if (activityData.state != null)
-            activity.state = padMinLength(activityData.state, 2)
+            activity.state = padMinLength(activityData.state!!, 2)
         if (activityData.details != null)
-            activity.details = padMinLength(activityData.details, 2)
+            activity.details = padMinLength(activityData.details!!, 2)
 
         if (activityData.start != null) {
-            activity.timestamps().start = Instant.ofEpochMilli(activityData.start)
+            activity.timestamps().start = Instant.ofEpochMilli(activityData.start!!)
         } else if (activityData.remaining != null) {
             // TODO This is broken for some unknown reason
             activity.timestamps().clearStart()

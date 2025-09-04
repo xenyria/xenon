@@ -1,0 +1,38 @@
+{
+    "schemaVersion": 1,
+    "id": "xenon",
+    "version": "${version}",
+    "name": "Xenon",
+    "description": "Discord Rich Presence, Level Editor, QoL features and more! (xenyria.net)",
+    "authors": [
+        "Lumanyx"
+    ],
+    "contact": {
+        "homepage": "https://xenyria.net/",
+        "sources": "https://github.com/xenyria/xenon"
+    },
+    "license": "CC0-1.0",
+    "icon": "assets/xenon/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            {
+                "value": "net.xenyria.Xenon",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "mixins": [
+        "xenon.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.17.2",
+        "minecraft": "~1.21.8",
+        "java": ">=21",
+        "fabric-api": "*",
+        "fabric-language-kotlin": "*"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
+}
