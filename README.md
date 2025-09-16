@@ -1,3 +1,6 @@
+> [!WARNING]
+> This project is still heavily work in progress and completely non-functional at the moment.
+
 # Xenon
 
 ---
