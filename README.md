@@ -3,8 +3,6 @@
 
 # Xenon
 
----
-
 This repository contains the official Fabric mod for the Xenyria Minecraft Server.
 Xenon is designed to enhance the gameplay experience on the Xenyria server by adding various quality-of-life features and improvements.
 
