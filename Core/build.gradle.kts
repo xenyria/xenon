@@ -29,6 +29,10 @@ dependencies {
     implementation("net.openhft:zero-allocation-hashing:0.16")
 }
 
+java {
+    withSourcesJar()
+}
+
 tasks.test {
     useJUnitPlatform()
 }
@@ -48,11 +52,11 @@ publishing {
     }
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/xenyria/xenon")
+            name = "PixelgroundLabs"
+            url = uri("https://maven.pixelgroundlabs.dev/releases")
             credentials {
-                username = findProperty("gpr.user") as? String ?: System.getenv("GH_USERNAME")
-                password = findProperty("gpr.token") as? String ?: System.getenv("GH_PACKAGES_TOKEN")
+                username = findProperty("PXGD_PUBLIC_USERNAME") as? String
+                password = findProperty("PXGD_PUBLIC_PASSWORD") as? String
             }
         }
     }

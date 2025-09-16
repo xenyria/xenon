@@ -7,7 +7,7 @@ import java.util.*
 
 interface ILevelEditorGizmo {
 
-    val maxRenderDistance: Int
+    val renderDistance: Int
 
     val uuid: UUID
 

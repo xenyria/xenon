@@ -3,9 +3,11 @@ package net.xenyria.xenon.packet
 import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundEnterGizmoEditModePacket
 import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundExitGizmoEditModePacket
 import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundGizmoListPacket
+import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundUpdateGizmoPacket
 import net.xenyria.xenon.packet.clientbound.handshake.ClientboundHandshakePacket
 import net.xenyria.xenon.packet.clientbound.misc.ClientboundResetPacket
 import net.xenyria.xenon.packet.clientbound.shape.ClientboundRemoveShapesPacket
+import net.xenyria.xenon.packet.clientbound.shape.ClientboundResetShapesPacket
 import net.xenyria.xenon.packet.clientbound.shape.ClientboundUpdateShapesPacket
 import net.xenyria.xenon.packet.clientbound.state.ClientboundAcknowledgeModeSwitchPacket
 import net.xenyria.xenon.packet.clientbound.state.ClientboundUpdateConfigPacket
@@ -50,6 +52,7 @@ object XenonPacketRegistry {
     val CLIENTBOUND_RESET = makePacketType("reset", ::ClientboundResetPacket)
     val CLIENTBOUND_UPDATE_CONFIG = makePacketType("update_config", ::ClientboundUpdateConfigPacket)
     val CLIENTBOUND_GIZMO_LIST = makePacketType("gizmo_list", ::ClientboundGizmoListPacket)
+    val CLIENTBOUND_UPDATE_GIZMO = makePacketType("update_gizmo", ::ClientboundUpdateGizmoPacket)
     val CLIENTBOUND_ENTER_GIZMO_EDIT_MODE = makePacketType("enter_gizmo_edit_mode", ::ClientboundEnterGizmoEditModePacket)
     val CLIENTBOUND_EXIT_GIZMO_EDIT_MODE = makePacketType("exit_gizmo_edit_mode", ::ClientboundExitGizmoEditModePacket)
     val SERVERBOUND_REQUEST_MODE_SWITCH = makePacketType("request_mode_switch", ::ServerboundRequestModeSwitchPacket)
@@ -61,6 +64,7 @@ object XenonPacketRegistry {
     // Forklift / Debug Shapes
     val CLIENTBOUND_REMOVE_SHAPES = makePacketType("remove_shapes", ::ClientboundRemoveShapesPacket)
     val CLIENTBOUND_UPDATE_SHAPES = makePacketType("update_shapes", ::ClientboundUpdateShapesPacket)
+    val CLIENTBOUND_RESET_SHAPES = makePacketType("reset_shapes", ::ClientboundResetShapesPacket)
 
 }
 

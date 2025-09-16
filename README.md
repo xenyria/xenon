@@ -3,6 +3,7 @@
 ---
 
 This repository contains the official Fabric mod for the Xenyria Minecraft Server.
+Xenon is designed to enhance the gameplay experience on the Xenyria server by adding various quality-of-life features and improvements.
 
 You can join our Server on `play.xenyria.net`.
 
@@ -10,7 +11,7 @@ You can join our Server on `play.xenyria.net`.
 
 - Adds a custom Discord Rich Presence to the game.
 - Adds improved shooting detection & camera switching for PaintSquad.
-- Level editor functionality (Debug shape rendering, Gizmos to manipulate translation, scale and rotation of game objects).
+- Level editor functionality for Xenyria Sandbox (Debug shape rendering, Gizmos to manipulate translation, scale and rotation of game objects).
 
 Although this mod is mainly focused on improving the experience on the Xenyria server, it can also be used on other servers.
 
@@ -18,6 +19,17 @@ Although this mod is mainly focused on improving the experience on the Xenyria s
 
 - `Core`: Contains shared code that is used by both the client and server. (packets, utilities & common logic)
 - `Mod`: Contains client-specific code, such as rendering and input handling.
+
+## Maven Repository
+
+The core module is published to the public Pixelground Labs Maven repository.
+
+```kotlin
+maven {
+    name = "pixelgroundlabs"
+    url = uri("https://maven.pixelgroundlabs.dev/releases")
+}
+```
 
 ## Acknowledgements
 

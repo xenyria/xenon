@@ -9,7 +9,11 @@ import net.xenyria.xenon.shape.ShapeType
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-class ClientboundUpdateShapesPacket : IXenonPacket(XenonPacketRegistry.CLIENTBOUND_UPDATE_SHAPES) {
+class ClientboundUpdateShapesPacket() : IXenonPacket(XenonPacketRegistry.CLIENTBOUND_UPDATE_SHAPES) {
+
+    constructor(list: List<IEditorShape<*>>) : this() {
+        this.shapes = list
+    }
 
     var shapes: List<IEditorShape<*>> = emptyList()
         private set

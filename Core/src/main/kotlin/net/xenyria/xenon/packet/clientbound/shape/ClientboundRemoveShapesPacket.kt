@@ -7,7 +7,12 @@ import net.xenyria.xenon.packet.XenonPacketRegistry
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-class ClientboundRemoveShapesPacket : IXenonPacket(XenonPacketRegistry.CLIENTBOUND_REMOVE_SHAPES) {
+@Suppress("unused")
+class ClientboundRemoveShapesPacket() : IXenonPacket(XenonPacketRegistry.CLIENTBOUND_REMOVE_SHAPES) {
+
+    constructor(shapes: List<String>) : this() {
+        shapeIds = shapes
+    }
 
     var shapeIds: List<String> = emptyList()
         private set
