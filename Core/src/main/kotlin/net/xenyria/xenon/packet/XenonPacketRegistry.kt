@@ -6,6 +6,9 @@ import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundGizmoListPacket
 import net.xenyria.xenon.packet.clientbound.gizmo.ClientboundUpdateGizmoPacket
 import net.xenyria.xenon.packet.clientbound.handshake.ClientboundHandshakePacket
 import net.xenyria.xenon.packet.clientbound.misc.ClientboundResetPacket
+import net.xenyria.xenon.packet.clientbound.overlay.ClientboundRemoveOverlaysPacket
+import net.xenyria.xenon.packet.clientbound.overlay.ClientboundResetOverlaysPacket
+import net.xenyria.xenon.packet.clientbound.overlay.ClientboundUpdateOverlaysPacket
 import net.xenyria.xenon.packet.clientbound.shape.ClientboundRemoveShapesPacket
 import net.xenyria.xenon.packet.clientbound.shape.ClientboundResetShapesPacket
 import net.xenyria.xenon.packet.clientbound.shape.ClientboundUpdateShapesPacket
@@ -66,6 +69,10 @@ object XenonPacketRegistry {
     val CLIENTBOUND_UPDATE_SHAPES = makePacketType("update_shapes", ::ClientboundUpdateShapesPacket)
     val CLIENTBOUND_RESET_SHAPES = makePacketType("reset_shapes", ::ClientboundResetShapesPacket)
 
+    // Forklift / Overlays
+    val CLIENTBOUND_RESET_OVERLAYS = makePacketType("reset_overlays", ::ClientboundResetOverlaysPacket)
+    val CLIENTBOUND_REMOVE_OVERLAYS = makePacketType("remove_overlays", ::ClientboundRemoveOverlaysPacket)
+    val CLIENTBOUND_UPDATE_OVERLAYS = makePacketType("update_overlays", ::ClientboundUpdateOverlaysPacket)
 }
 
 private class RegisteredPacket(val constructor: () -> IXenonPacket)
