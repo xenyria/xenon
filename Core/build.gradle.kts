@@ -3,6 +3,8 @@ plugins {
     id("maven-publish")
 }
 
+println("Publishing as " + (findProperty("PXGD_PUBLIC_USERNAME") as? String ?: "undefined"))
+
 dependencies {
     testImplementation(kotlin("test"))
 }
