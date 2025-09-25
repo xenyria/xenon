@@ -1,0 +1,31 @@
+name: publish.yml
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Build project
+        run: ./gradlew build
+
+      - name: Publish to Maven
+        run: ./gradlew publish
+        env:
+          PXGD_PUBLIC_USERNAME: ${{ secrets.PXGD_PUBLIC_USERNAME }}
+          PXGD_PUBLIC_PASSWORD: ${{ secrets.PXGD_PUBLIC_PASSWORD }}
