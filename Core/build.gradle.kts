@@ -3,7 +3,13 @@ plugins {
     id("maven-publish")
 }
 
-println("Publishing as " + (findProperty("PXGD_PUBLIC_USERNAME") as? String ?: "undefined"))
+println("Publishing as " + getProperty("PXGD_PUBLIC_USERNAME"))
+
+fun getProperty(key: String): String? {
+    var property = findProperty(key)
+    if (property == null) property = System.getenv(key)
+    return property as? String
+}
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -57,8 +63,8 @@ publishing {
             name = "PixelgroundLabs"
             url = uri("https://maven.pixelgroundlabs.dev/releases")
             credentials {
-                username = findProperty("PXGD_PUBLIC_USERNAME") as? String
-                password = findProperty("PXGD_PUBLIC_PASSWORD") as? String
+                username = getProperty("PXGD_PUBLIC_USERNAME")
+                password = getProperty("PXGD_PUBLIC_PASSWORD")
             }
         }
     }
