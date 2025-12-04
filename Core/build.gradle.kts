@@ -61,7 +61,7 @@ publishing {
     repositories {
         maven {
             name = "PixelgroundLabs"
-            url = uri("https://maven.pixelgroundlabs.dev/releases")
+            url = uri("https://maven.pixelgroundlabs.com/releases")
             credentials {
                 username = getProperty("PXGD_PUBLIC_USERNAME")
                 password = getProperty("PXGD_PUBLIC_PASSWORD")
