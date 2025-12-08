@@ -1,0 +1,7 @@
+Ignore:
+ - build
+ - .kotlin
+ - .gradle
+ - out
+ - tmp
+ - temp

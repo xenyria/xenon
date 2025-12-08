@@ -1,6 +1,6 @@
-rootProject.name = "Xenon"
-include("Core")
-include("Mod")
+rootProject.name = "xenon"
+include("core")
+include("mod")
 
 pluginManagement {
     repositories {
