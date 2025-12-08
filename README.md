@@ -28,7 +28,7 @@ The core module is published to the public Pixelground Labs Maven repository.
 ```kotlin
 maven {
     name = "pixelgroundlabs"
-    url = uri("https://maven.pixelgroundlabs.dev/releases")
+    url = uri("https://maven.pixelgroundlabs.com/releases")
 }
 ```
 
