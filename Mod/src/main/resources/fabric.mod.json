@@ -11,7 +11,7 @@
         "homepage": "https://xenyria.net/",
         "sources": "https://github.com/xenyria/xenon"
     },
-    "license": "CC0-1.0",
+    "license": "MIT",
     "icon": "assets/xenon/icon.png",
     "environment": "*",
     "entrypoints": {
