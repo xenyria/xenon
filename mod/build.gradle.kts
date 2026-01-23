@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2026 Pixelground Labs - All Rights Reserved.
+ * Unauthorized copying or redistribution of this file in source and binary forms via any medium
+ * is strictly prohibited.
+ */
+
 import com.github.jengelman.gradle.plugins.shadow.ShadowBasePlugin.Companion.shadow
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -45,7 +51,10 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricVersion}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+
+    modImplementation(project(":core"))
     shadow(project(":core"))
+    modImplementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
 }
 
