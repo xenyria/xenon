@@ -3,6 +3,7 @@ package net.xenyria.xenon.packet.clientbound.gizmo
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.packet.IXenonPacket
 import net.xenyria.xenon.packet.XenonPacketRegistry.CLIENTBOUND_ENTER_GIZMO_EDIT_MODE
+import org.joml.Vector3dc
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
@@ -38,4 +39,4 @@ class ClientboundEnterGizmoEditModePacket() : IXenonPacket(CLIENTBOUND_ENTER_GIZ
     }
 }
 
-data class GizmoInitData(val position: IVec3D, val rotation: IVec3D, val scale: IVec3D)
+data class GizmoInitData(val position: Vector3dc, val rotation: Vector3dc, val scale: Vector3dc)

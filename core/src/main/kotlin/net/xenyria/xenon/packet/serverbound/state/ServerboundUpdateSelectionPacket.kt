@@ -13,19 +13,23 @@ import java.util.*
  */
 class ServerboundUpdateSelectionPacket() : IXenonPacket(XenonPacketRegistry.SERVERBOUND_UPDATE_SELECTION) {
 
-    lateinit var selectedGizmo: UUID
-        private set
+    var selectedGizmo: UUID? = null
 
-    constructor(selectedGizmo: UUID) : this() {
+    constructor(selectedGizmo: UUID?) : this() {
         this.selectedGizmo = selectedGizmo
     }
 
     override fun deserialize(input: DataInputStream) {
-        selectedGizmo = input.readUUID()
+        selectedGizmo = if (input.readBoolean())
+            input.readUUID()
+        else
+            null
     }
 
     override fun serialize(output: DataOutputStream) {
-        output.writeUUID(selectedGizmo)
+        val gizmo = selectedGizmo
+        output.writeBoolean(gizmo != null)
+        if (gizmo != null) output.writeUUID(gizmo)
     }
 
 }

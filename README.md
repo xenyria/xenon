@@ -18,8 +18,9 @@ Although this mod is mainly focused on improving the experience on the Xenyria s
 
 ## Project Structure
 
-- `Core`: Contains shared code that is used by both the client and server. (packets, utilities & common logic)
-- `Mod`: Contains client-specific code, such as rendering and input handling.
+- `core`: Contains shared code that is used by both the client and server. (packets, utilities & common logic)
+- `client`: Contains client-specific code, such as debug rendering and editor functionality.
+- `mod`: Contains the Fabric mod implementation for the client.
 
 ## Maven Repository
 

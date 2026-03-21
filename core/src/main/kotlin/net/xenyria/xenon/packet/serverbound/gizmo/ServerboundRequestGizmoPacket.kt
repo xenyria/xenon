@@ -12,7 +12,11 @@ import java.util.*
  * Sent by the client when the player wants to edit (translate, rotate, scale) a Gizmo.
  * Only one player can edit a Gizmo at a time.
  */
-class ServerboundRequestGizmoPacket : IXenonPacket(SERVERBOUND_REQUEST_GIZMO) {
+class ServerboundRequestGizmoPacket() : IXenonPacket(SERVERBOUND_REQUEST_GIZMO) {
+
+    constructor(uuid: UUID) : this() {
+        this.gizmoId = uuid
+    }
 
     lateinit var gizmoId: UUID
         private set

@@ -3,6 +3,8 @@ package net.xenyria.xenon.shape.impl
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.shape.IEditorShape
 import net.xenyria.xenon.shape.ShapeType
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import org.json.JSONObject
 import java.awt.Color
 import java.io.DataInputStream
@@ -10,26 +12,13 @@ import java.io.DataOutputStream
 import java.util.*
 
 class BoxShapeProperties(
-    dimensions: IVec3D = ZERO,
-    boxColor: Color = Color.WHITE,
-    outlineColor: Color = Color(255, 255, 255, 64),
-    visibleThroughWalls: Boolean = true,
-    onlyRenderOutline: Boolean = true,
-    centerTextVertically: Boolean = true
+    var dimensions: Vector3dc = ZERO,
+    var boxColor: Color = Color.WHITE,
+    var outlineColor: Color = Color(255, 255, 255, 64),
+    var visibleThroughWalls: Boolean = true,
+    var onlyRenderOutline: Boolean = false,
+    var centerTextVertically: Boolean = true
 ) : net.xenyria.xenon.shape.IEditorShapeProperties() {
-
-    var dimensions: IVec3D = dimensions
-        private set
-    var boxColor: Color = boxColor
-        private set
-    var outlineColor: Color = outlineColor
-        private set
-    var visibleThroughWalls: Boolean = visibleThroughWalls
-        private set
-    var onlyRenderOutline: Boolean = onlyRenderOutline
-        private set
-    var centerTextVertically: Boolean = centerTextVertically
-        private set
 
     override fun writeToStream(stream: DataOutputStream) {
         stream.writeVec3F(dimensions)
@@ -83,13 +72,25 @@ class BoxShapeProperties(
     }
 }
 
-class BoxShape : IEditorShape<BoxShapeProperties>(ShapeType.BOX, BoxShapeProperties()) {
-    override val textDisplayOrigin: IVec3D
+class BoxShape : IEditorShape<BoxShapeProperties> {
+
+    constructor() : super(ShapeType.BOX, BoxShapeProperties())
+    constructor(position: Vector3dc, properties: BoxShapeProperties) : super(position, ShapeType.BOX, properties)
+
+    val box: Box
+        get() = Box(
+            position.x(), position.y(), position.z(),
+            position.x() + properties.dimensions.x(),
+            position.y() + properties.dimensions.y(),
+            position.z() + properties.dimensions.z()
+        )
+
+    override val textDisplayOrigin: Vector3dc
         get() {
             if (properties.centerTextVertically)
-                return position + (properties.dimensions / 2.0)
-            return position + (properties.dimensions / 2.0) +
-                    Vec3D(0.0, properties.dimensions.y / 2.0, 0.0)
+                return Vector3d(position).add((Vector3d(properties.dimensions).div(2.0)))
+            return Vector3d(position).add(Vector3d(properties.dimensions).div(2.0))
+                .add(Vector3d(0.0, properties.dimensions.y() / 2.0, 0.0))
         }
 
 }

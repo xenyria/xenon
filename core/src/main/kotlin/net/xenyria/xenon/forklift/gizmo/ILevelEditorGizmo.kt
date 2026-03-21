@@ -1,8 +1,8 @@
 package net.xenyria.xenon.forklift.gizmo
 
 import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.core.IVec3D
 import net.xenyria.xenon.forklift.TransformationMode
+import org.joml.Vector3dc
 import java.util.*
 
 interface ILevelEditorGizmo {
@@ -11,11 +11,11 @@ interface ILevelEditorGizmo {
 
     val uuid: UUID
 
-    val objectPosition: IVec3D
+    val objectPosition: Vector3dc
 
-    val objectRotation: IVec3D
+    val objectRotation: Vector3dc
 
-    val objectScale: IVec3D
+    val objectScale: Vector3dc
 
     val allowedModes: Set<TransformationMode>
 

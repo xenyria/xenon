@@ -9,17 +9,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("fabric-loom") version "1.11-SNAPSHOT"
+    id("fabric-loom") version "1.15-SNAPSHOT"
     id("maven-publish")
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "9.1.0"
 }
 
-val minecraftVersion: String by project
-val yarnMappings: String by project
-val loaderVersion: String by project
-val fabricKotlinVersion: String by project
-val fabricVersion: String by project
+val minecraft_version: String by project
+val loader_version: String by project
+val fabric_kotlin_version: String by project
+val fabric_api_version: String by project
 
 base {
     archivesName.set(project.property("archives_base_name") as String)
@@ -32,6 +31,8 @@ java {
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -45,15 +46,17 @@ repositories {
 
 dependencies {
     // To change the versions see the gradle.properties file
-    minecraft("com.mojang:minecraft:${minecraftVersion}")
-    mappings("net.fabricmc:yarn:${yarnMappings}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
+    minecraft("com.mojang:minecraft:${minecraft_version}")
+    mappings(loom.officialMojangMappings())
+    modImplementation("net.fabricmc:fabric-loader:${loader_version}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricVersion}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
+    modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
 
     modImplementation(project(":core"))
     shadow(project(":core"))
+    modImplementation(project(":client"))
+    shadow(project(":client"))
     modImplementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
 }
@@ -73,6 +76,7 @@ tasks.withType<JavaCompile>().configureEach {
     // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
     // If Javadoc is generated, this must be specified in that task too.
     options.encoding = "UTF-8"
+    options.release = 21
     options.release.set(targetJavaVersion)
 }
 

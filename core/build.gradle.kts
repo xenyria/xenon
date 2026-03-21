@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.3.0"
     id("maven-publish")
 }
 
@@ -35,6 +35,7 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("org.json:json:20250517")
     implementation("net.openhft:zero-allocation-hashing:0.16")
+    api("org.joml:joml:1.10.8")
 }
 
 java {

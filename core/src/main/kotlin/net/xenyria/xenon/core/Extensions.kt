@@ -1,5 +1,7 @@
 package net.xenyria.xenon.core
 
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import org.json.JSONArray
 import org.json.JSONObject
 import java.awt.Color
@@ -7,12 +9,12 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
 
-fun DataInputStream.readVec3F(): IVec3D {
-    return Vec3D(readFloat().toDouble(), readFloat().toDouble(), readFloat().toDouble())
+fun DataInputStream.readVec3F(): Vector3dc {
+    return Vector3d(readFloat().toDouble(), readFloat().toDouble(), readFloat().toDouble())
 }
 
-fun DataInputStream.readVec3D(): IVec3D {
-    return Vec3D(readDouble(), readDouble(), readDouble())
+fun DataInputStream.readVec3D(): Vector3dc {
+    return Vector3d(readDouble(), readDouble(), readDouble())
 }
 
 fun DataInputStream.readRGB(): Color {
@@ -33,16 +35,16 @@ fun DataOutputStream.writeRGBA(color: Color) {
     writeInt(color.rgb)
 }
 
-fun DataOutputStream.writeVec3F(vec3D: IVec3D) {
-    writeFloat(vec3D.x.toFloat())
-    writeFloat(vec3D.y.toFloat())
-    writeFloat(vec3D.z.toFloat())
+fun DataOutputStream.writeVec3F(vec3D: Vector3dc) {
+    writeFloat(vec3D.x().toFloat())
+    writeFloat(vec3D.y().toFloat())
+    writeFloat(vec3D.z().toFloat())
 }
 
-fun DataOutputStream.writeVec3D(vec3D: IVec3D) {
-    writeDouble(vec3D.x)
-    writeDouble(vec3D.y)
-    writeDouble(vec3D.z)
+fun DataOutputStream.writeVec3D(vec3D: Vector3dc) {
+    writeDouble(vec3D.x())
+    writeDouble(vec3D.y())
+    writeDouble(vec3D.z())
 }
 
 fun DataInputStream.readUUID(): UUID {
@@ -94,28 +96,28 @@ inline fun <reified Type> DataInputStream.readOptional(reader: (DataInputStream)
     return reader(this)
 }
 
-fun vecToJsonArray(value: IVec3D): JSONArray {
+fun vecToJsonArray(value: Vector3dc): JSONArray {
     val array = JSONArray()
-    array.put(value.x)
-    array.put(value.y)
-    array.put(value.z)
+    array.put(value.x())
+    array.put(value.y())
+    array.put(value.z())
     return array
 }
 
-fun JSONObject.putVector(key: String, value: IVec3D): JSONObject {
+fun JSONObject.putVector(key: String, value: Vector3dc): JSONObject {
     put(key, vecToJsonArray(value))
     return this
 }
 
-fun JSONArray.putVector(vec: IVec3D): JSONArray {
+fun JSONArray.putVector(vec: Vector3dc): JSONArray {
     put(vecToJsonArray(vec))
     return this
 }
 
-fun JSONObject.getVector(key: String): IVec3D? {
+fun JSONObject.getVector(key: String): Vector3dc? {
     if (!has(key)) return null
     val array = getJSONArray(key) ?: return null
-    return Vec3D(array.getDouble(0), array.getDouble(1), array.getDouble(2))
+    return Vector3d(array.getDouble(0), array.getDouble(1), array.getDouble(2))
 }
 
 fun JSONObject.putColor(name: String, color: Color): JSONObject {

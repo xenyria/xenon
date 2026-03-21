@@ -2,6 +2,7 @@ package net.xenyria.xenon.forklift.gizmo
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.TransformationMode
+import org.joml.Vector3dc
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
@@ -12,9 +13,9 @@ import java.util.*
 data class GizmoData(
     val gizmoId: UUID,
     val editorId: UUID?,
-    val position: IVec3D,
-    val rotation: IVec3D,
-    val scale: IVec3D,
+    val position: Vector3dc,
+    val rotation: Vector3dc,
+    val scale: Vector3dc,
     val rotationAxes: Set<Axis>,
     val allowedModes: Set<TransformationMode>
 )

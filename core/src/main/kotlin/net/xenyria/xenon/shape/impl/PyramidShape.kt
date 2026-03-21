@@ -4,22 +4,24 @@ import net.xenyria.xenon.core.*
 import net.xenyria.xenon.shape.IEditorShape
 import net.xenyria.xenon.shape.IEditorShapeProperties
 import net.xenyria.xenon.shape.ShapeType
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import org.json.JSONObject
 import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
 class PyramidShapeProperties(
-    baseCenter: IVec3D = ZERO,
-    apex: IVec3D = ZERO,
+    baseCenter: Vector3dc = ZERO,
+    apex: Vector3dc = ZERO,
     baseSize: Float = 1.0F,
     outlineColor: Color = Color.WHITE,
     visibleThroughWalls: Boolean = false
 ) : IEditorShapeProperties() {
 
-    var baseCenter: IVec3D = baseCenter
+    var baseCenter: Vector3dc = baseCenter
         private set
-    var apex: IVec3D = apex
+    var apex: Vector3dc = apex
         private set
     var baseSize: Float = baseSize
         private set
@@ -58,10 +60,9 @@ class PyramidShapeProperties(
 
 class PyramidShape : IEditorShape<PyramidShapeProperties>(ShapeType.SPHERE, PyramidShapeProperties()) {
 
-    override val textDisplayOrigin: IVec3D
-        get() = properties.apex + OFFSET
+    override val textDisplayOrigin: Vector3dc get() = Vector3d(properties.apex).add(OFFSET)
 
     companion object {
-        val OFFSET = Vec3D(0.0, 0.25, 0.0)
+        val OFFSET: Vector3dc = Vector3d(0.0, 0.25, 0.0)
     }
 }

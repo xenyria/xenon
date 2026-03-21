@@ -1,8 +1,12 @@
 package net.xenyria.xenon.packet.serverbound.gizmo
 
-import net.xenyria.xenon.core.*
+import net.xenyria.xenon.core.readUUID
+import net.xenyria.xenon.core.readVec3D
+import net.xenyria.xenon.core.writeUUID
+import net.xenyria.xenon.core.writeVec3D
 import net.xenyria.xenon.packet.IXenonPacket
 import net.xenyria.xenon.packet.XenonPacketRegistry.SERVERBOUND_UPDATE_GIZMO
+import org.joml.Vector3dc
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
@@ -15,11 +19,11 @@ class ServerboundUpdateGizmoPacket : IXenonPacket(SERVERBOUND_UPDATE_GIZMO) {
 
     lateinit var gizmoId: UUID
         private set
-    lateinit var position: IVec3D
+    lateinit var position: Vector3dc
         private set
-    lateinit var rotation: IVec3D
+    lateinit var rotation: Vector3dc
         private set
-    lateinit var scale: IVec3D
+    lateinit var scale: Vector3dc
         private set
 
     override fun deserialize(input: DataInputStream) {

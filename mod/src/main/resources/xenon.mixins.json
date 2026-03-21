@@ -1,14 +1,21 @@
 {
-	"required": true,
-	"package": "net.xenyria.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ExampleMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+    "required": true,
+    "package": "net.xenyria.xenon.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "KeyboardMixin",
+        "KeyboardHandlerInvoker",
+        "StartUpMixin",
+        "GameRendererMixin",
+        "GameTickMixin",
+        "MouseMixin",
+        "MouseInvoker",
+        "DisconnectMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "overwrites": {
+        "requireAnnotations": true
+    }
 }

@@ -1,0 +1,116 @@
+package net.xenyria.xenon.forklift.editor.state.impl
+
+import net.xenyria.xenon.core.Axis
+import net.xenyria.xenon.core.deltaOf
+import net.xenyria.xenon.core.format
+import net.xenyria.xenon.core.getVectorComponent
+import net.xenyria.xenon.forklift.editor.EditorMode
+import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.state.IEditorCommonState
+import net.xenyria.xenon.forklift.editor.state.MODIFIERS_COLOR
+import net.xenyria.xenon.forklift.editor.target.IEditorTarget
+import net.xenyria.xenon.forklift.gizmo.getAxisColor
+import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
+import net.xenyria.xenon.forklift.render.roundToNearestMultiple
+import net.xenyria.xenon.message.Message
+import net.xenyria.xenon.message.MessageComponent
+import org.joml.Vector3d
+import org.joml.Vector3dc
+import kotlin.math.abs
+
+const val DEFAULT_SCALE_SENSITIVITY = 0.005
+const val DEFAULT_SCALE_SHIFT_SENSITIVITY = 0.00125
+
+class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
+
+    override val renderAxisType: AxisRenderType = AxisRenderType.BOX
+    private var initialScaleValue: Vector3dc = Vector3d(0.0)
+
+    fun getSnapValue(): Double {
+        return game.config.scaleGridSnap
+    }
+
+    override fun beginEdit() {
+        initialScaleValue = Vector3d(target.scale)
+    }
+
+    override fun shouldRotateGizmo(): Boolean {
+        return true
+    }
+
+    @Synchronized
+    private fun appendEditingModifiers(): String {
+        val modifiers = ArrayList<String>()
+        if (game.hasControlDown()) modifiers.add("Grid")
+        if (game.hasShiftDown()) modifiers.add("Fine")
+        if (game.hasAltDown()) modifiers.add("Combined")
+        return if (modifiers.isEmpty()) "" else " (" + modifiers.joinToString(", ") + ")"
+    }
+
+    @Synchronized
+    override fun handleDelta(axis: Axis, displacement: Double) {
+        var displacement = displacement
+        val sensitivity: Double = if (game.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
+        displacement *= sensitivity * -1
+
+        val updatedValue = Vector3d(initialScaleValue)
+
+        // Use the result to scale the object
+        if (game.hasAltDown()) {
+            updatedValue.add(displacement, displacement, displacement)
+        } else {
+            updatedValue.add(axis.positive.mul(displacement))
+        }
+
+        var newScale: Vector3dc = Vector3d(initialScaleValue)
+        if (game.hasAltDown()) {
+            // Combined scaling
+            if (game.hasControlDown()) {
+                // Snap to grid
+                newScale = roundToNearestMultiple(newScale, getSnapValue())
+            }
+        } else {
+            // Single axis scaling
+            newScale = Vector3d(newScale).add(axis.positive.mul(displacement))
+            if (game.hasControlDown()) {
+                // Snap to grid
+                newScale = roundToNearestMultiple(newScale, getSnapValue(), axis)
+            }
+        }
+
+        initialScaleValue = Vector3d(newScale)
+        target.scale = Vector3d(newScale)
+    }
+
+    override val type: EditorMode = EditorMode.SCALE
+
+    @Synchronized
+    override fun getStatus(): Message {
+        val axis = getEditingAxis()
+        if (game.editor.isSelected(target.uuid) && axis != null) {
+            val effectiveDelta = deltaOf(target.position, previousPosition!!)
+            val delta = getVectorComponent(axis, effectiveDelta)
+            val sign = delta < 0
+            val signStr = if (sign) "-" else "+"
+
+            val components = mutableListOf<MessageComponent>()
+
+            var display = signStr + abs(delta).format(2)
+            display += " (=" + getVectorComponent(axis, target.position).format(2) + ")"
+
+            components.add(MessageComponent(display, getAxisColor(axis)))
+            components.add(MessageComponent(appendEditingModifiers(), MODIFIERS_COLOR))
+
+            return Message(components)
+        } else {
+            val axis = getSelectedAxis()
+            if (axis != null) {
+                var str = "Translate " + axis.name
+                str += " (=" + getVectorComponent(axis, target.position) + ")"
+                return Message(listOf(MessageComponent(str, getAxisColor(axis))))
+            }
+        }
+        return Message.EMPTY
+    }
+
+}

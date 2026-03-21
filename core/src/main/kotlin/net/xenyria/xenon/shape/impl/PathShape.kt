@@ -1,6 +1,9 @@
 package net.xenyria.xenon.shape.impl
 
 import net.xenyria.xenon.core.*
+import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.shape.ShapeType
+import org.joml.Vector3dc
 import org.json.JSONObject
 import java.awt.Color
 import java.io.DataInputStream
@@ -11,7 +14,7 @@ class PathShapeProperties : net.xenyria.xenon.shape.IEditorShapeProperties() {
     lateinit var color: Color
         private set
 
-    lateinit var waypoints: List<IVec3D>
+    lateinit var waypoints: List<Vector3dc>
         private set
 
     override fun writeToStream(stream: DataOutputStream) {
@@ -23,7 +26,7 @@ class PathShapeProperties : net.xenyria.xenon.shape.IEditorShapeProperties() {
     override fun readFromStream(stream: DataInputStream) {
         color = stream.readRGB()
         val waypointCount = stream.readInt()
-        val loadedWaypoints = ArrayList<IVec3D>(waypointCount)
+        val loadedWaypoints = ArrayList<Vector3dc>(waypointCount)
         repeat(waypointCount) {
             loadedWaypoints.add(stream.readVec3F())
         }
@@ -40,9 +43,9 @@ class PathShapeProperties : net.xenyria.xenon.shape.IEditorShapeProperties() {
 
 }
 
-class PathShape : net.xenyria.xenon.shape.IEditorShape<PathShapeProperties>(_root_ide_package_.net.xenyria.xenon.shape.ShapeType.PATH, PathShapeProperties()) {
+class PathShape : IEditorShape<PathShapeProperties>(ShapeType.PATH, PathShapeProperties()) {
 
-    override val textDisplayOrigin: IVec3D
+    override val textDisplayOrigin: Vector3dc
         get() {
             return properties.waypoints.firstOrNull() ?: position
         }

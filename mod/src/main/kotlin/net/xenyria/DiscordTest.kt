@@ -4,7 +4,6 @@ object DiscordTest {
 
     @JvmStatic
     fun main(args: Array<String>) {
-
     }
 
 }
