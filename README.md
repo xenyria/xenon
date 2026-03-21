@@ -11,7 +11,7 @@ You can join our Server on `play.xenyria.net`.
 ## Features
 
 - Adds a custom Discord Rich Presence to the game.
-- Adds improved shooting detection & camera switching for PaintSquad.
+- Adds automatic camera switching for PaintSquad.
 - Level editor functionality for Xenyria Sandbox (Debug shape rendering, Gizmos to manipulate translation, scale and rotation of game objects).
 
 Although this mod is mainly focused on improving the experience on the Xenyria server, it can also be used on other servers.
