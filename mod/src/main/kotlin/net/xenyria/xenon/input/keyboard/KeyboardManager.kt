@@ -2,9 +2,9 @@ package net.xenyria.xenon.input.keyboard
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.KeyEvent
-import net.xenyria.xenon.forklift
 import net.xenyria.xenon.game
 import net.xenyria.xenon.mixin.KeyboardHandlerInvoker
+import net.xenyria.xenon.xenon
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
 private data class HeldKey(val keyCode: Int, val scanCode: Int)
@@ -15,16 +15,14 @@ class KeyboardManager(windowId: Long, invoker: KeyboardHandlerInvoker) {
     val simulator = KeyboardSimulator(windowId, keyboardInvoker)
 
     private val _heldKeys = HashMap<Int, HeldKey>()
-    private val _mutex = Any()
 
+    @Synchronized
     fun releaseAllKeys() {
-        synchronized(_mutex) {
-            val keysToRelease = _heldKeys
-            for (key in keysToRelease.values) {
-                simulator.simulateKeyRelease(key.keyCode, key.scanCode)
-            }
-            _heldKeys.clear()
+        val keysToRelease = _heldKeys
+        for (key in keysToRelease.values) {
+            simulator.simulateKeyRelease(key.keyCode, key.scanCode)
         }
+        _heldKeys.clear()
     }
 
     fun onKeyPress(window: Long, action: KeyAction, keyEvent: KeyEvent, callbackInfo: CallbackInfo) {
@@ -34,16 +32,19 @@ class KeyboardManager(windowId: Long, invoker: KeyboardHandlerInvoker) {
             handleKeyPress(keyEvent.key)
         }
 
-        if (forklift.editor.isMouseLocked()) {
-            callbackInfo.cancel()
-            return
+        val forklift = xenon.getForkliftOrNull()
+        if (forklift != null && forklift.editor.isMouseLocked()) {
+            if (action != KeyAction.UP) {
+                callbackInfo.cancel()
+                return
+            }
         }
 
-        synchronized(_mutex) {
+        synchronized(this) {
             if (action == KeyAction.DOWN) {
-                _heldKeys.remove(keyEvent.key)
-            } else {
                 _heldKeys[keyEvent.key] = HeldKey(keyEvent.key, keyEvent.scancode)
+            } else if (action == KeyAction.UP) {
+                _heldKeys.remove(keyEvent.key)
             }
         }
     }
@@ -52,6 +53,7 @@ class KeyboardManager(windowId: Long, invoker: KeyboardHandlerInvoker) {
         val numberKey = toNumberKey(key)
         if (numberKey != null) {
             // Mode selection update for Forklift
+            val forklift = xenon.getForkliftOrNull() ?: return
             forklift.editor.selectMode(numberKey)
         }
     }

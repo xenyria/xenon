@@ -96,7 +96,7 @@ object DefaultGizmoRenderer {
             val end = GizmoRotationHelper.translateGizmoPosition(origin, axis, rotation)
             val direction = deltaOf(origin, end)
 
-            renderer.drawPrimitives(listOf(LinePrimitive(origin, end, color, 4.0F)), true)
+            renderer.drawPrimitives(listOf(LinePrimitive(origin, end, color, 8.0F)), true)
             if (axisRenderType != null) {
                 when (axisRenderType) {
                     AxisRenderType.CONE -> drawAxisCone(renderer, position, direction, color)

@@ -3,7 +3,9 @@ package net.xenyria.xenon.forklift.editor.state.impl
 import net.xenyria.xenon.core.Axis
 import net.xenyria.xenon.core.format
 import net.xenyria.xenon.core.getVectorComponent
+import net.xenyria.xenon.core.setVectorComponent
 import net.xenyria.xenon.forklift.editor.EditorMode
+import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.state.*
@@ -11,15 +13,18 @@ import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.gizmo.getAxisColor
 import net.xenyria.xenon.forklift.render.IGameRenderer
 import net.xenyria.xenon.forklift.render.gizmo.getAxisEditorColor
+import net.xenyria.xenon.forklift.render.multiplyColor
+import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
 import net.xenyria.xenon.forklift.render.primitive.makeRingPrimitive
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.message.MessageComponent
 import org.joml.Vector2d
+import org.joml.Vector3d
 import java.awt.Color
 import kotlin.math.abs
 
-const val ROTATION_GIZMO_RADIUS = 1.0
-const val ROTATION_GIZMO_LINE_WIDTH = 4.0F
+const val ROTATION_GIZMO_RADIUS = 0.5
+const val ROTATION_GIZMO_LINE_WIDTH = 8.0F
 
 class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {
 
@@ -65,6 +70,43 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
                 true
             )
         }
+
+        // Render additional editor indicator
+        if (editingAxis != null) {
+            val previousRotationValue = _rotator.getPreviousRotation(editingAxis)
+            val newRotationValue = _rotator.getNewRotation(editingAxis)
+
+            val offset = when (editingAxis) {
+                Axis.X -> Vector3d(0.0, 0.0, ROTATION_GIZMO_RADIUS)
+                Axis.Y -> Vector3d(ROTATION_GIZMO_RADIUS, 0.0, 0.0)
+                Axis.Z -> Vector3d(ROTATION_GIZMO_RADIUS, 0.0, 0.0)
+            }
+
+            val previousRotation = Vector3d()
+            setVectorComponent(editingAxis, previousRotation, previousRotationValue)
+            val newRotation = Vector3d()
+            setVectorComponent(editingAxis, newRotation, newRotationValue)
+
+            val oldRotationPoint = GizmoRotationHelper.transformPosition(previousRotation, offset)
+            val newRotationPoint = GizmoRotationHelper.transformPosition(newRotation, offset)
+
+            val center = target.position
+            renderer.drawPrimitives(
+                listOf(
+                    LinePrimitive(
+                        center, oldRotationPoint.add(center),
+                        multiplyColor(getAxisColor(editingAxis), 0.8),
+                        ROTATION_GIZMO_LINE_WIDTH
+                    ),
+                    LinePrimitive(
+                        center, newRotationPoint.add(center),
+                        multiplyColor(getAxisColor(editingAxis), 3.5),
+                        ROTATION_GIZMO_LINE_WIDTH
+                    ),
+                ),
+                true
+            )
+        }
     }
 
     override fun querySelectedAxis(): GizmoAxisIntersection? {
@@ -88,7 +130,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
         return if (modifiers.isEmpty()) "" else " (" + java.lang.String.join(", ", modifiers) + ")"
     }
 
-    override fun getStatus(): Message {
+    override fun getStatus(): Message? {
         val axis = _rotator.editingAxis
         if (game.editor.isSelected(target.uuid) && axis != null) {
             val effectiveDelta = _rotator.getEffectiveRotation()
@@ -100,7 +142,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
             val sign = delta < 0
             val signStr = if (sign) "-" else "+"
             var displayString: String = signStr + (abs(delta)).format(2)
-            displayString += " (=" + getVectorComponent(axis, target.rotation) + ")"
+            displayString += " (=" + getVectorComponent(axis, target.rotation).format(2) + ")"
             displayString += " "
 
             val firstComponent = MessageComponent(displayString, getAxisColor(axis))
@@ -113,6 +155,6 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
                 return Message(listOf(MessageComponent(displayString, getAxisColor(axis))))
             }
         }
-        return Message.EMPTY
+        return null
     }
 }

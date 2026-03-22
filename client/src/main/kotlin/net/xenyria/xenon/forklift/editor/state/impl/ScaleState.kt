@@ -53,39 +53,34 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
         val sensitivity: Double = if (game.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
         displacement *= sensitivity * -1
 
-        val updatedValue = Vector3d(initialScaleValue)
-
-        // Use the result to scale the object
-        if (game.hasAltDown()) {
-            updatedValue.add(displacement, displacement, displacement)
-        } else {
-            updatedValue.add(axis.positive.mul(displacement))
-        }
-
         var newScale: Vector3dc = Vector3d(initialScaleValue)
         if (game.hasAltDown()) {
+            newScale = Vector3d(newScale).add(displacement, displacement, displacement)
             // Combined scaling
             if (game.hasControlDown()) {
                 // Snap to grid
-                newScale = roundToNearestMultiple(newScale, getSnapValue())
+                target.scale = roundToNearestMultiple(newScale, getSnapValue())
+            } else {
+                target.scale = Vector3d(newScale)
             }
+            initialScaleValue = Vector3d(newScale)
         } else {
             // Single axis scaling
             newScale = Vector3d(newScale).add(axis.positive.mul(displacement))
             if (game.hasControlDown()) {
                 // Snap to grid
-                newScale = roundToNearestMultiple(newScale, getSnapValue(), axis)
+                target.scale = roundToNearestMultiple(newScale, getSnapValue(), axis)
+            } else {
+                target.scale = newScale
             }
+            initialScaleValue = Vector3d(newScale)
         }
-
-        initialScaleValue = Vector3d(newScale)
-        target.scale = Vector3d(newScale)
     }
 
     override val type: EditorMode = EditorMode.SCALE
 
     @Synchronized
-    override fun getStatus(): Message {
+    override fun getStatus(): Message? {
         val axis = getEditingAxis()
         if (game.editor.isSelected(target.uuid) && axis != null) {
             val effectiveDelta = deltaOf(target.position, previousPosition!!)
@@ -96,7 +91,7 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
             val components = mutableListOf<MessageComponent>()
 
             var display = signStr + abs(delta).format(2)
-            display += " (=" + getVectorComponent(axis, target.position).format(2) + ")"
+            display += " (=" + getVectorComponent(axis, target.scale).format(2) + ")"
 
             components.add(MessageComponent(display, getAxisColor(axis)))
             components.add(MessageComponent(appendEditingModifiers(), MODIFIERS_COLOR))
@@ -105,12 +100,12 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
         } else {
             val axis = getSelectedAxis()
             if (axis != null) {
-                var str = "Translate " + axis.name
-                str += " (=" + getVectorComponent(axis, target.position) + ")"
+                var str = "Scale " + axis.name
+                str += " (=" + getVectorComponent(axis, target.scale).format(2) + ")"
                 return Message(listOf(MessageComponent(str, getAxisColor(axis))))
             }
         }
-        return Message.EMPTY
+        return null
     }
 
 }

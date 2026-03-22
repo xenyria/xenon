@@ -33,5 +33,5 @@ abstract class IEditorState(val game: IGameClient, val target: IEditorTarget) {
 
     abstract val type: EditorMode
 
-    abstract fun getStatus(): Message
+    abstract fun getStatus(): Message?
 }

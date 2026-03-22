@@ -41,5 +41,4 @@ class Forklift(val client: IGameClient) {
         editor.reset()
     }
 
-
 }

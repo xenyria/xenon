@@ -8,8 +8,10 @@ import net.xenyria.xenon.forklift.editor.Editor
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
+import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.mixin.MouseInvoker
 import net.xenyria.xenon.packet.IXenonPacket
+import net.xenyria.xenon.util.toComponent
 import org.joml.Vector2d
 import org.joml.Vector3d
 import org.joml.Vector3dc
@@ -40,7 +42,8 @@ class GameClient(xenon: Xenon) : IGameClient {
         return Vector2d(projected.x, (game.window.height - 1) - projected.y)
     }
 
-    override fun sendMessage(text: String) {
+    override fun sendMessage(message: Message) {
+        game.chatListener.handleSystemMessage(message.toComponent(), false)
     }
 
     override fun hasShiftDown(): Boolean {

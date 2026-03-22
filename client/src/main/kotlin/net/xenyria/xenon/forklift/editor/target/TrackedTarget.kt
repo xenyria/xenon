@@ -6,6 +6,7 @@ import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.state.GizmoInteractionResult
 import net.xenyria.xenon.forklift.editor.state.IEditorState
 import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.message.Message
 import org.joml.Vector2d
 
 class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMode: EditorMode) {
@@ -32,6 +33,10 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
 
     fun isInFieldOfView(): Boolean {
         return true
+    }
+
+    fun getStatusMessage(): Message? {
+        return _state.getStatus()
     }
 
 }

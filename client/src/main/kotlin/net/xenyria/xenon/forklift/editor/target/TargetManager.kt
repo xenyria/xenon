@@ -104,4 +104,8 @@ class TargetManager(val client: IGameClient) {
         return _activeEditors[targetId] == null
     }
 
+    fun getActiveMode(): EditorMode {
+        return _currentMode
+    }
+
 }

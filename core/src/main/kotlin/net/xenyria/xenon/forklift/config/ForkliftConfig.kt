@@ -8,9 +8,9 @@ import java.io.DataOutputStream
 const val CONFIG_FORMAT_VERSION = 1
 
 class ForkliftConfig(
-    translationGridSnap: Double = 0.0,
-    scaleGridSnap: Double = 0.0,
-    rotationGridSnap: Double = 0.0
+    translationGridSnap: Double = 0.1,
+    scaleGridSnap: Double = 0.1,
+    rotationGridSnap: Double = 5.0
 ) {
     var translationGridSnap: Double = translationGridSnap
         private set

@@ -16,6 +16,6 @@ class KeyboardSimulator(windowId: Long, mixin: KeyboardHandlerInvoker) {
     }
 
     fun simulateKeyRelease(keyCode: Int, scanCode: Int) {
-        simulateKeyPress(ACTION_UP, KeyEvent(keyCode, scanCode, 0))
+        simulateKeyPress(ACTION_UP, KeyEvent(keyCode, scanCode, 123))
     }
 }

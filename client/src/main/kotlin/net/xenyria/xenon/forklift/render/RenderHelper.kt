@@ -10,7 +10,7 @@ import kotlin.math.sin
 const val MAX_COLOR_VALUE = 255.0f
 const val MAX_COLOR_CHANNEL_VALUE = 255
 
-fun roundToNearestMultiple(vector: Vector3dc, multiple: Double): Vector3dc {
+fun roundToNearestMultiple(vector: Vector3dc, multiple: Double): Vector3d {
     val x = (vector.x() / multiple).roundToInt() * multiple
     val y = (vector.y() / multiple).roundToInt() * multiple
     val z = (vector.z() / multiple).roundToInt() * multiple

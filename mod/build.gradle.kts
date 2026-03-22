@@ -53,11 +53,11 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
 
-    modImplementation(project(":core"))
+    implementation(project(":core"))
     shadow(project(":core"))
-    modImplementation(project(":client"))
+    implementation(project(":client"))
     shadow(project(":client"))
-    modImplementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
+    implementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
 }
 

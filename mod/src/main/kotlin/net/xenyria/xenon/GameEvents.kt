@@ -10,6 +10,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 object GameEvents {
 
     fun onKeyPress(window: Long, action: Int, keyEvent: KeyEvent, callbackInfo: CallbackInfo) {
+        if (keyEvent.modifiers == 123) {
+            val a = 0
+        }
         val keyboard = xenon.getKeyboardManagerOrNull() ?: return
         val keyAction = toKeyAction(action) ?: return
         keyboard.onKeyPress(window, keyAction, keyEvent, callbackInfo)
@@ -35,9 +38,7 @@ object GameEvents {
 
     fun onMouseMove(windowId: Long, x: Double, y: Double, info: CallbackInfo) {
         if (windowId != game.window.handle()) return
-
-        if (forklift.editor.isMouseLocked()) {
-            forklift.editor.onMouseMove(Vector2d(x, y))
+        if (xenon.onMouseMove(Vector2d(x, y))) {
             info.cancel()
         }
     }

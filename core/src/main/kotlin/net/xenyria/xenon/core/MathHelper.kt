@@ -2,6 +2,7 @@ package net.xenyria.xenon.core
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.Vector3fc
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -14,7 +15,23 @@ val ZERO_DECIMALS = DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.U
 
 val ZERO: Vector3dc = Vector3d(0.0, 0.0, 0.0)
 
+fun setVectorComponent(axis: Axis, vector: Vector3d, value: Double) {
+    when (axis) {
+        Axis.X -> vector.set(value, vector.y, vector.z)
+        Axis.Y -> vector.set(vector.x, value, vector.z)
+        Axis.Z -> vector.set(vector.x, vector.y, value)
+    }
+}
+
 fun getVectorComponent(axis: Axis, vector: Vector3dc): Double {
+    return when (axis) {
+        Axis.X -> vector.x()
+        Axis.Y -> vector.y()
+        Axis.Z -> vector.z()
+    }
+}
+
+fun getVectorComponent(axis: Axis, vector: Vector3fc): Float {
     return when (axis) {
         Axis.X -> vector.x()
         Axis.Y -> vector.y()

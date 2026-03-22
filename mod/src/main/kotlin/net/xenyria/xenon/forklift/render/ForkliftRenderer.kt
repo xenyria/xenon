@@ -20,6 +20,7 @@ import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
 import net.xenyria.xenon.forklift.render.shape.ShapeRenderers
 import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.xenon
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3f
@@ -40,9 +41,12 @@ fun compileShapes(
 ): List<RenderPass> {
     val renderAdapter = MinecraftRenderAdapter()
     renderAdapter.drawPrimitives(primitives, false)
-    for (gizmo in gizmos) {
-        gizmo.target.render(renderAdapter, gizmo.selected, gizmo.index)
-    }
+
+    val forklift = xenon.getForkliftOrNull()
+    if (forklift != null && forklift.editor.isActive)
+        for (gizmo in gizmos)
+            gizmo.target.render(renderAdapter, gizmo.selected, gizmo.index)
+    
     for (shape in shapes) {
         val renderer = ShapeRenderers.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
         renderer.drawShape(renderAdapter, shape)

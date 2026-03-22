@@ -5,7 +5,6 @@ import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.editor.GizmoManipulator
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
-import net.xenyria.xenon.forklift.editor.state.GizmoRotationHelper.getVectorsForAxis
 import net.xenyria.xenon.forklift.editor.state.GizmoRotationHelper.translateAxis
 import net.xenyria.xenon.forklift.editor.state.GizmoRotationHelper.translateAxisForControls
 import net.xenyria.xenon.forklift.editor.state.impl.ROTATION_GIZMO_RADIUS
@@ -25,8 +24,8 @@ const val EDIT_PLANE_SIZE = 32
 const val EDIT_AXIS_SIZE = 0.0001
 
 data class CirclePoint(val vector: Vector3dc, val angle: Double)
-data class AxisPoint(val axis: Axis, val point: CirclePoint) : IIntersectable {
-    override val boundingBoxes: List<Box> get() = listOf(makeCenteredBox(point.vector, 0.1, 0.1))
+data class AxisBox(val axis: Axis, val box: Box) : IIntersectable {
+    override val boundingBoxes: List<Box> get() = listOf(box)
 }
 
 object GizmoRotationHelper {
@@ -45,7 +44,7 @@ object GizmoRotationHelper {
     }
 
     fun getVectorsForAxis(origin: Vector3dc, axis: Axis): List<CirclePoint> {
-        val resolution = 2.5
+        val resolution = 1.0
         return when {
             axis === Axis.X -> getCircleVectors(origin, ROTATION_GIZMO_RADIUS, 0f, true, resolution)
             axis === Axis.Y -> getCircleVectors(origin, ROTATION_GIZMO_RADIUS, 0f, false, resolution)
@@ -113,6 +112,16 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     private var _quaternion: Quaternionf? = null
     private var _previousCameraRotation = Vector3d()
     private var _previousObjectRotation = Vector3d()
+    private var _previousLocalRotation = Vector3f()
+    private var _newLocalRotation = Vector3f()
+
+    fun getPreviousRotation(axis: Axis): Double {
+        return getVectorComponent(axis, _previousObjectRotation)
+    }
+
+    fun getNewRotation(axis: Axis): Double {
+        return getVectorComponent(axis, _newLocalRotation).toDouble()
+    }
 
     fun resetSelectedAxis() {
         editingAxis = null
@@ -126,28 +135,36 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     fun onMouseMove(game: IGameClient, movement: Vector2d) {
         val editingAxis = this.editingAxis
         if (editingAxis == null || !target.supportedRotationAxes.contains(editingAxis)) return
-        val mouseX: Double = game.getMousePosition().x()
-        val mouseY: Double = game.getMousePosition().y()
         val sensitivity = if (game.hasShiftDown()) ROTATION_FINE_SENSITIVITY else ROTATION_SENSITIVITY
 
         // Store previous mouse coordinates
-        if (_lastMouseX == Double.MIN_VALUE || _lastMouseY == Double.MIN_VALUE) {
-            _lastMouseX = mouseX
-            _lastMouseY = mouseY
-        }
         val delta = GizmoManipulator.calculateMovementDelta(
             game,
             translateAxisForControls(editingAxis),
             translateAxisForControls(editingAxis).positive, target
         )
-        val displacement = delta.displacement * sensitivity
+
+        var displacement = delta.displacement * sensitivity
 
         val quaternion = _quaternion
         if (quaternion != null) {
+            if (editingAxis == Axis.X) displacement *= -1.0F
+
             when (editingAxis) {
-                Axis.X -> quaternion.rotateLocalX(Math.toRadians(-displacement).toFloat())
-                Axis.Y -> quaternion.rotateLocalY(Math.toRadians(displacement).toFloat())
-                Axis.Z -> quaternion.rotateLocalZ(Math.toRadians(displacement).toFloat())
+                Axis.X -> {
+                    quaternion.rotateLocalX(Math.toRadians(displacement).toFloat())
+                    _newLocalRotation.add(displacement.toFloat(), 0.0F, 0.0F)
+                }
+
+                Axis.Y -> {
+                    quaternion.rotateLocalY(Math.toRadians(displacement).toFloat())
+                    _newLocalRotation.add(0.0F, displacement.toFloat(), 0.0F)
+                }
+
+                Axis.Z -> {
+                    quaternion.rotateLocalZ(Math.toRadians(displacement).toFloat())
+                    _newLocalRotation.add(0.0F, 0.0F, displacement.toFloat())
+                }
             }
 
             val buffer = Vector3f()
@@ -162,19 +179,16 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
                 degrees = Vector3d(roundToNearestMultiple(degrees, getSnapValue(game)))
             target.rotation = degrees
         }
-
-        _lastMouseX = mouseX
-        _lastMouseY = mouseY
     }
 
     fun getEffectiveRotation(): Vector3d {
-        return target.rotation.sub(_previousObjectRotation)
+        return Vector3d(target.rotation).sub(_previousObjectRotation)
     }
 
     fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
         if (!event.isRightMouseButton) return GizmoInteractionResult.NONE
         if (event.isReleased) {
-            editingAxis = null
+            reset()
             return GizmoInteractionResult.END_EDIT
         } else if (event.isPressed) {
             val editingAxis = getSelectedAxis()
@@ -198,6 +212,8 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
                 quaternion.rotateX(Math.toRadians(_previousObjectRotation.x).toFloat())
                 quaternion.rotateZ(Math.toRadians(_previousObjectRotation.z).toFloat())
                 this._quaternion = quaternion
+                _previousLocalRotation.set(_previousObjectRotation)
+                _newLocalRotation.set(_previousObjectRotation)
             }
 
             game.editor.enableDragMode(target.uuid)
@@ -211,27 +227,74 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
         return querySelectedAxis()?.axis
     }
 
-    private fun querySelectedAxisPoint(camera: GameCamera): Pair<AxisPoint, Double>? {
+    private fun querySelectedAxisPoint(camera: GameCamera): Pair<Axis, Double>? {
         val cameraPosition = camera.position
         if (cameraPosition.distance(target.position) > 7) return null
 
         val cameraDirection = camera.direction
-        val axisPoints = ArrayList<AxisPoint>()
+
+        val position = target.position
+
+        val thickness = 0.01
+        val xAxisBox = Box(
+            position.x - ROTATION_GIZMO_RADIUS,
+            position.y - ROTATION_GIZMO_RADIUS,
+            position.z - thickness,
+            position.x + ROTATION_GIZMO_RADIUS,
+            position.y + ROTATION_GIZMO_RADIUS,
+            position.z + thickness,
+        )
+        val zAxisBox = Box(
+            position.x - thickness,
+            position.y - ROTATION_GIZMO_RADIUS,
+            position.z - ROTATION_GIZMO_RADIUS,
+            position.x + thickness,
+            position.y + ROTATION_GIZMO_RADIUS,
+            position.z + ROTATION_GIZMO_RADIUS,
+        )
+
+        val axes = mapOf(
+            Axis.X to AxisBox(Axis.X, zAxisBox),
+            Axis.Y to AxisBox(Axis.Y, makeCenteredBox(position, ROTATION_GIZMO_RADIUS * 2.0, thickness)),
+            Axis.Z to AxisBox(Axis.Y, xAxisBox),
+        )
+
+        val maxRadius = ROTATION_GIZMO_RADIUS
+
+        val results = ArrayList<Pair<Axis, Double>>()
         for (axis in target.supportedRotationAxes) {
-            for (point in getVectorsForAxis(target.position, axis)) axisPoints.add(AxisPoint(axis, point))
+            val box = requireNotNull(axes[axis])
+            val intersection = RayCast.intersection(box.box, cameraPosition, cameraDirection, 10.0)
+            if (intersection != null) {
+                val distance = intersection.hitPosition.distance(position)
+                val maxDeviance = 0.035
+                var isWithinRange = distance >= maxRadius - maxDeviance && distance <= maxRadius + maxDeviance
+                if (axis == Axis.Y && (intersection.face != CubeFace.UP && intersection.face != CubeFace.DOWN))
+                    isWithinRange = true
+                if (isWithinRange)
+                    results.add(axis to distance)
+            }
         }
-        val closestIntersection = RayCast.findNearestIntersection(axisPoints, cameraPosition, cameraDirection, 10.0) ?: return null
-        return closestIntersection.data to closestIntersection.intersection.distance
+        if (results.isEmpty()) return null
+        val result = results.minBy { it.second }
+        return result.first to result.second
     }
 
     fun querySelectedAxis(): GizmoAxisIntersection? {
-        val (point, distance) = querySelectedAxisPoint(game.getCamera()) ?: return null
-        return GizmoAxisIntersection(distance, point.axis)
+        val (axis, distance) = querySelectedAxisPoint(game.getCamera()) ?: return null
+        return GizmoAxisIntersection(distance, axis)
     }
 
     var editingAxis: Axis? = null
         private set
-    private var _lastMouseX: Double = Double.MIN_VALUE
-    private var _lastMouseY: Double = Double.MIN_VALUE
+
+    private fun reset() {
+        GizmoManipulator.reset()
+        editingAxis = null
+        _previousCameraRotation.set(0.0)
+        _previousObjectRotation.set(0.0)
+        _previousLocalRotation.set(0.0)
+        _newLocalRotation.set(0.0)
+    }
 
 }

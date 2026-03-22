@@ -10,7 +10,9 @@
         "GameTickMixin",
         "MouseMixin",
         "MouseInvoker",
-        "DisconnectMixin"
+        "DisconnectMixin",
+        "ChatMixin",
+        "HudMixin"
     ],
     "injectors": {
         "defaultRequire": 1

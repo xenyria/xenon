@@ -61,6 +61,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             val query = querySelectedAxis()
             if (query != null) {
                 _editingSession = EditingSession(query.axis)
+                _gizmoManipulator.reset()
                 previousPosition = Vector3d(target.position)
                 previousScale = Vector3d(target.scale)
                 game.editor.enableDragMode(target.uuid)

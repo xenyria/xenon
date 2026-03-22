@@ -9,10 +9,12 @@ import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.forklift.render.XenonRenderPipelines
+import net.xenyria.xenon.forklift.render.overlay.ForkliftOverlayRenderer
 import net.xenyria.xenon.forklift.render.primitive.BoxPrimitive
 import net.xenyria.xenon.input.keyboard.KeyboardManager
 import net.xenyria.xenon.input.mouse.fromLWJGL
 import net.xenyria.xenon.mixin.KeyboardHandlerInvoker
+import org.joml.Vector2d
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.slf4j.Logger
@@ -25,8 +27,14 @@ const val MOD_ID = "xenon"
 class Xenon(val version: String) {
 
     val client = GameClient(this)
-    val forklift = Forklift(client)
+    val forklift: Forklift get() = requireNotNull(getForkliftOrNull()) { "Not connected to any supported server" }
     val logger: Logger = LoggerFactory.getLogger("Xenon")
+
+    fun getForkliftOrNull(): Forklift? {
+        return _session?.forklift
+    }
+
+    private var _session: Session? = null
 
     private var _keyboard: KeyboardManager? = null
     val keyboard: KeyboardManager get() = requireNotNull(_keyboard) { "Keyboard functionality is not ready yet" }
@@ -44,6 +52,9 @@ class Xenon(val version: String) {
         )
         XenonRenderPipelines.initialize()
         ForkliftRenderer.initialize()
+        ForkliftOverlayRenderer.initialize(this)
+
+        _session = Session(client)
 
         var primRotation = Vector3d()
         val primitive = BoxPrimitive(
@@ -84,56 +95,49 @@ class Xenon(val version: String) {
 
         forklift.editor.targetManager.updateTargets(listOf(target))
         ForkliftRenderer.updateAdditionalPrimitives(listOf(primitive))
-        /*ForkliftRenderer.updateAdditionalPrimitives(
-            ArrayList(
-                listOf(
-                    ConePrimitive(
-                        Vector3d(0.0, 1.0, 0.0), Vector3d(0.0),
-                        Color.GREEN, 0.5
-                    ),
-                    ConePrimitive(
-                        Vector3d(0.0, -1.0, 0.0), Vector3d(0.0),
-                        Color.GREEN.darker(), 0.5
-                    ),
-                    ConePrimitive(
-                        Vector3d(1.0, 0.0, 0.0), Vector3d(0.0),
-                        Color.RED, 0.5
-                    ),
-                    ConePrimitive(
-                        Vector3d(-1.0, 0.0, 0.0), Vector3d(0.0),
-                        Color.RED.darker().darker(), 0.5
-                    ),
-                    ConePrimitive(
-                        Vector3d(0.0, 0.0, 1.0), Vector3d(0.0),
-                        Color.CYAN, 0.5
-                    ),
-                    ConePrimitive(
-                        Vector3d(0.0, 0.0, -1.0), Vector3d(0.0),
-                        Color.CYAN.darker().darker(), 0.5
-                    ),
-                )
-            )
-        )*/
         logger.info("Xenon (v${version}) has been initialized.")
     }
 
     fun onTick() {
-        forklift.onTick()
+        getForkliftOrNull()?.onTick()
     }
 
     fun reset() {
-        this.forklift.reset()
+        getForkliftOrNull()?.reset()
+        this._session = null
     }
 
     fun onMouseButton(mouseButtonInfo: MouseButtonInfo, action: Int): Boolean {
-        if (game.screen != null) return false // 
-
+        if (game.screen != null) return false
         val event = fromLWJGL(mouseButtonInfo.button, action, mouseButtonInfo.modifiers)
-
         if (event.isRightMouseButton && event.isReleased) forklift.editor.leaveDragMode()
+
+        val forklift = getForkliftOrNull() ?: return false
 
         if (forklift.editor.onMouseButton(event) && forklift.editor.isActive) {
             keyboard.releaseAllKeys()
+            return true
+        }
+        return false
+    }
+
+    fun shouldShiftHud(): Boolean {
+        return getForkliftOrNull()?.editor?.isActive ?: return false
+    }
+
+    fun toggleEditMode(): Boolean {
+        val forklift = getForkliftOrNull() ?: return false
+        return forklift.editor.toggleEditMode()
+    }
+
+    /**
+     * Called when the user moves their mouse.
+     * @return When true, the input event is discarded - meaning it's not passed to the game.
+     */
+    fun onMouseMove(mousePosition: Vector2d): Boolean {
+        val forklift = getForkliftOrNull() ?: return false
+        if (forklift.editor.isMouseLocked()) {
+            forklift.editor.onMouseMove(mousePosition)
             return true
         }
         return false
@@ -148,6 +152,7 @@ class Xenon(val version: String) {
         }
 
         fun create(version: String) {
+            Keybinds.register()
             _xenon = Xenon(version)
         }
     }
@@ -155,4 +160,3 @@ class Xenon(val version: String) {
 
 val game: Minecraft get() = Minecraft.getInstance()
 val xenon: Xenon get() = Xenon.instance
-val forklift: Forklift get() = xenon.forklift

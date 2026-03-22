@@ -11,26 +11,34 @@ import net.xenyria.xenon.forklift.editor.state.impl.TranslateState
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.editor.target.TargetManager
 import net.xenyria.xenon.forklift.editor.target.TrackedTarget
+import net.xenyria.xenon.forklift.gizmo.AXIS_X_COLOR
+import net.xenyria.xenon.forklift.gizmo.AXIS_Y_COLOR
+import net.xenyria.xenon.forklift.gizmo.AXIS_Z_COLOR
+import net.xenyria.xenon.message.Message
+import net.xenyria.xenon.message.MessageComponent
+import net.xenyria.xenon.message.MessageFormatter
 import net.xenyria.xenon.packet.IXenonPacket
 import net.xenyria.xenon.packet.serverbound.gizmo.ServerboundRequestGizmoPacket
 import org.joml.Vector2d
 import org.joml.Vector3dc
+import java.awt.Color
 import java.util.*
 
 data class RenderableGizmo(val target: TrackedTarget, val selected: Boolean, val index: Int)
 
-enum class EditorMode(val index: Int, val displayName: String) {
-    TRANSLATE(1, "T") {
+enum class EditorMode(val index: Int, val displayName: String, val color: Color) {
+
+    TRANSLATE(1, "T", AXIS_Z_COLOR) {
         override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
             return TranslateState(game, target)
         }
     },
-    SCALE(2, "S") {
+    SCALE(2, "S", AXIS_Y_COLOR) {
         override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
             return ScaleState(game, target)
         }
     },
-    ROTATE(3, "R") {
+    ROTATE(3, "R", AXIS_X_COLOR) {
         override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
             return RotateState(game, target)
         }
@@ -54,7 +62,7 @@ interface IGameClient {
 
     fun getScreenPosition(worldPosition: Vector3dc): Vector2d
 
-    fun sendMessage(text: String)
+    fun sendMessage(message: Message)
 
     fun hasShiftDown(): Boolean
     fun hasControlDown(): Boolean
@@ -131,7 +139,7 @@ class Editor(val client: IGameClient) {
 
             if (result == GizmoInteractionResult.START_EDIT) {
                 if (!targetManager.canEditTarget(candidate.target.uuid)) {
-                    client.sendMessage("This object is currently being edited by another player.")
+                    client.sendMessage(MessageFormatter.formatForkliftMessage("Another player is currently editing this entity."))
                     return false
                 }
 
@@ -159,6 +167,40 @@ class Editor(val client: IGameClient) {
 
     fun leaveDragMode() {
         dragHandler.exitDragMode()
+    }
+
+    fun getStatusMessage(): Message {
+        val gizmo = getActiveGizmo()
+        if (gizmo != null) {
+            val msg = gizmo.getStatusMessage()
+            if (msg != null) return msg
+        }
+        for (target in targetManager.getAvailableTargets()) {
+            val msg = target.getStatusMessage() ?: continue
+            return msg
+        }
+        return Message(MessageComponent("Idle", Color(64, 64, 64)))
+    }
+
+    fun getModeMessage(): Message {
+        val components = ArrayList<MessageComponent>()
+        val activeMode = targetManager.getActiveMode()
+        for ((index, mode) in EditorMode.entries.withIndex()) {
+            var text = mode.displayName
+            if (index != EditorMode.entries.size - 1) text += " "
+            if (mode == activeMode) {
+                components.add(MessageComponent(text, mode.color))
+            } else {
+                components.add(MessageComponent(text, Color.GRAY))
+            }
+        }
+        return Message(components)
+    }
+
+    fun toggleEditMode(): Boolean {
+        isActive = !isActive
+        client.sendMessage(MessageFormatter.formatForkliftMessage("state=$isActive"))
+        return true
     }
 
 }

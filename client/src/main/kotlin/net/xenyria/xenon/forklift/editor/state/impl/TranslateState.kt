@@ -17,7 +17,7 @@ import net.xenyria.xenon.message.MessageComponent
 import org.joml.Vector3d
 import kotlin.math.abs
 
-private const val DEFAULT_TRANSLATION_SENSITIVITY = 0.005
+private const val DEFAULT_TRANSLATION_SENSITIVITY = 0.0035
 private const val DEFAULT_TRANSLATION_FINE_SENSITIVITY = 0.00125
 
 class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
@@ -35,17 +35,18 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
 
     @Synchronized
     override fun handleDelta(axis: Axis, displacement: Double) {
-        val sensitivity = if (game.hasShiftDown()) DEFAULT_TRANSLATION_SENSITIVITY else DEFAULT_TRANSLATION_FINE_SENSITIVITY
+        val sensitivity = if (game.hasShiftDown()) DEFAULT_TRANSLATION_FINE_SENSITIVITY else DEFAULT_TRANSLATION_SENSITIVITY
         val displacement = displacement * (sensitivity * -1)
 
         val delta = axis.positive.mul(displacement)
-        var newPosition = Vector3d(_currentTargetPosition).add(delta)
+        val newPosition = Vector3d(_currentTargetPosition).add(delta)
 
         if (game.hasControlDown()) {
-            newPosition = roundToNearestMultiple(newPosition, getSnapValue(game), axis)
+            target.position = roundToNearestMultiple(newPosition, getSnapValue(game), axis)
+        } else {
+            target.position = newPosition
         }
         _currentTargetPosition = newPosition
-        target.position = newPosition
     }
 
     private fun appendEditingModifiers(): String {
@@ -63,7 +64,7 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
     override val type: EditorMode = EditorMode.TRANSLATE
 
     @Synchronized
-    override fun getStatus(): Message {
+    override fun getStatus(): Message? {
         val axis = getEditingAxis()
         if (game.editor.isSelected(target.uuid) && axis != null) {
             val effectiveDelta = deltaOf(target.position, previousPosition!!)
@@ -84,10 +85,10 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
             val axis = getSelectedAxis()
             if (axis != null) {
                 var str: String = "Translate " + axis.name
-                str += " (=" + getVectorComponent(axis, target.position) + ")"
+                str += " (=" + getVectorComponent(axis, target.position).format(2) + ")"
                 return Message(listOf(MessageComponent(str, getAxisColor(axis))))
             }
         }
-        return Message.EMPTY
+        return null
     }
 }
