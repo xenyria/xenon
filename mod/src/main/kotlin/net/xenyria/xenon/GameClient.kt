@@ -1,7 +1,9 @@
 package net.xenyria.xenon
 
+import net.minecraft.client.CameraType
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
 import net.minecraft.world.phys.Vec3
+import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.XenonClientConfig
 import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.core.calculateDirection
@@ -123,11 +125,43 @@ class GameClient(xenon: Xenon) : IGameClient {
         xenon.updateActivityAppId(appId)
     }
 
+    override fun updateCameraLock(isLocked: Boolean, newMode: CameraPerspective?) {
+        xenon.updateCameraLock(isLocked, newMode)
+    }
+
+    override fun requestCameraPerspective(perspective: CameraPerspective) {
+        xenon.requestCameraPerspective(perspective)
+    }
+
     @Synchronized
     override fun updateInternalMousePosition(x: Double, y: Double) {
         val invoker = (game.mouseHandler as MouseInvoker)
         invoker.setX(x)
         invoker.setY(y)
+    }
+
+    private fun mapPerspective(cameraType: CameraType): CameraPerspective {
+        return when (cameraType) {
+            CameraType.FIRST_PERSON -> CameraPerspective.FIRST_PERSON
+            CameraType.THIRD_PERSON_FRONT -> CameraPerspective.THIRD_PERSON_FRONT
+            CameraType.THIRD_PERSON_BACK -> CameraPerspective.THIRD_PERSON_BACK
+        }
+    }
+
+    private fun mapCameraType(perspective: CameraPerspective): CameraType {
+        return when (perspective) {
+            CameraPerspective.FIRST_PERSON -> CameraType.FIRST_PERSON
+            CameraPerspective.THIRD_PERSON_FRONT -> CameraType.THIRD_PERSON_FRONT
+            CameraPerspective.THIRD_PERSON_BACK -> CameraType.THIRD_PERSON_BACK
+        }
+    }
+
+    override fun setCameraPerspective(perspective: CameraPerspective) {
+        game.options.cameraType = mapCameraType(perspective)
+    }
+
+    override fun getCameraPerspective(): CameraPerspective {
+        return mapPerspective(game.options.cameraType)
     }
 
     @Synchronized

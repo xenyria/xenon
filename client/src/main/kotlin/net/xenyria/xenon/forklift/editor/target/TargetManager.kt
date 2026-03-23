@@ -59,10 +59,25 @@ class TargetManager(val client: IGameClient) {
     }
 
     @Synchronized
+    private fun findSelectedGizmo(): TrackedTarget? {
+        val results = ArrayList<Pair<Double, TrackedTarget>>()
+        for (gizmo in getSortedTargets()) {
+            val state = gizmo.querySelectionState() ?: continue
+            results.add(state.distance to gizmo)
+        }
+
+        if (results.isNotEmpty()) {
+            val (_, target) = results.minBy { it.first }
+            return target
+        }
+        return null
+    }
+
+    @Synchronized
     fun onTick() {
-        val newId = _selectedGizmoId
+        val newId = findSelectedGizmo()?.target?.uuid
         if (_lastSentGizmoId != newId) {
-            _lastSentGizmoId = _selectedGizmoId
+            _lastSentGizmoId = newId
             client.sendPacket(ServerboundUpdateSelectionPacket(newId))
         }
         renderGizmos()
@@ -121,9 +136,13 @@ class TargetManager(val client: IGameClient) {
             targets.remove(selected)
             targets.add(0, selected)
         }
+        targets.removeIf {
+            val uuid = _activeEditors[it.target.uuid]
+            return@removeIf uuid != null && uuid != client.getPlayerId()
+        }
         return targets
     }
-    
+
     @Synchronized
     fun getAvailableTargets(): List<TrackedTarget> {
         val list = _availableTargets.toMutableList()

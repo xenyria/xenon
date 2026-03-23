@@ -43,4 +43,9 @@ object GameEvents {
         }
     }
 
+    fun onTogglePerspectiveKeybind(): Boolean {
+        val xenon = Xenon.getOrNull() ?: return false
+        return xenon.isCameraModeLocked()
+    }
+
 }

@@ -1,5 +1,11 @@
 package net.xenyria.xenon.config
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+const val LATEST_VERSION = 1
+
 enum class CameraMode(val key: String) {
     DISABLED("xenon_camera_disabled"),
     CHANGE("xenon_camera_change"),
@@ -12,22 +18,40 @@ enum class RichPresenceMode(val key: String) {
     ALL("xenon_drpc_all_servers")
 }
 
+@Serializable
 data class CameraSettings(
-    var mode: CameraMode
+    @SerialName("mode") var mode: CameraMode
 )
 
+@Serializable
 data class DeveloperSettings(
-    var enableForklift: Boolean = true,
-    var enableShapes: Boolean = true,
-    var enableGizmos: Boolean = true,
-    var enableOverlays: Boolean = true
-) {
-}
-
-data class MiscSettings(var discordActivityMode: RichPresenceMode = RichPresenceMode.TRUSTED_ONLY)
-
-data class XenonConfig(
-    var camera: CameraSettings = CameraSettings(CameraMode.CHANGE_AND_LOCK),
-    var developer: DeveloperSettings = DeveloperSettings(),
-    var misc: MiscSettings = MiscSettings()
+    @SerialName("enableGizmos") var enableGizmos: Boolean = true,
+    @SerialName("enableShapes") var enableShapes: Boolean = true,
+    @SerialName("enableOverlays") var enableOverlays: Boolean = true
 )
+
+@Serializable
+data class MiscSettings(@SerialName("activityMode") var activityMode: RichPresenceMode = RichPresenceMode.TRUSTED_ONLY)
+
+@Serializable
+data class XenonConfig(
+    @SerialName("version") val version: Int = LATEST_VERSION,
+    @SerialName("camera") var camera: CameraSettings = CameraSettings(CameraMode.CHANGE_AND_LOCK),
+    @SerialName("developer") var developer: DeveloperSettings = DeveloperSettings(),
+    @SerialName("misc") var misc: MiscSettings = MiscSettings()
+) {
+    companion object {
+
+        private val json = Json {
+            ignoreUnknownKeys = true
+        }
+
+        fun decode(text: String): XenonConfig {
+            return json.decodeFromString(text)
+        }
+
+        fun encode(config: XenonConfig): String {
+            return json.encodeToString(config)
+        }
+    }
+}

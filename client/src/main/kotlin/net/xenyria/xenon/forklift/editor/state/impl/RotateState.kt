@@ -40,8 +40,6 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
 
         val alpha = if (selected || index == 0) 255 else 8
 
-        if (hoveringAxis != null) game.editor.updateSelectedGizmo(target.uuid)
-
         val editingAxis = _rotator.editingAxis
         if (isAxisAvailable(Axis.Y) && (editingAxis == null || editingAxis === Axis.Y)) {
             // Y axis

@@ -23,7 +23,7 @@ object Keybinds {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: Minecraft ->
             if (TOGGLE_EDIT_MODE.consumeClick()) {
                 if (!xenon.toggleEditMode()) {
-                    xenon.logger.warn("Can't enter edit mode: Not connected to a supported server.")
+                    LOGGER.warn("Can't enter edit mode: Not connected to a supported server.")
                 }
             }
         })

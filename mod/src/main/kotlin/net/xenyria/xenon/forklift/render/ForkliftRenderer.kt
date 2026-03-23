@@ -95,6 +95,41 @@ object ForkliftRenderer {
     }
 
     fun render(context: WorldRenderContext) {
+        val camera: Vec3 = context.worldState().cameraRenderState.pos
+        /*val orientation = context.worldState().cameraRenderState.orientation
+        val dest = Vector3f()
+        orientation.getEulerAnglesXYZ(dest)
+
+        val random = Random(System.nanoTime())
+        val comp = Component.literal("${Math.toDegrees(dest.y)}")
+        val width = Minecraft.getInstance().font.width(comp)
+
+        // public static record TextSubmit(Matrix4f pose, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color,
+        //  int backgroundColor, int outlineColor) {
+        context.matrices().pushPose()
+        //
+        context.matrices().translate(-camera.x, -camera.y, -camera.z)
+
+        val quat = Quaternionf()
+        quat.rotateLocalX(toRadians(-context.gameRenderer().mainCamera.xRot()))
+        quat.rotateLocalY(toRadians(180 - context.gameRenderer().mainCamera.yRot()))
+        context.matrices().last().rotate(quat)
+
+
+        context.matrices().scale(1.0F / 16.0F, -1.0F / 16.0F, 1.0F / 16.0F)
+        context.matrices().translate(-(width / 2.0), 0.0, 0.0)
+
+        context.commandQueue().submitText(
+            context.matrices(),
+            1.0F, 1.0F, comp.visualOrderText,
+            true, Font.DisplayMode.SEE_THROUGH,
+            Color.RED.rgb,
+            Color.RED.rgb,
+            0,
+            0
+        )
+        context.matrices().popPose()*/
+
         for (pass in compileShapes(
             XenonClientConfig.config,
             _renderState.additionalPrimitives,

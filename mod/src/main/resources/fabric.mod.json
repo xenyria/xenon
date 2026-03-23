@@ -15,6 +15,9 @@
     "icon": "assets/xenon/icon.png",
     "environment": "*",
     "entrypoints": {
+        "modmenu": [
+            "net.xenyria.xenon.config.XenonModMenuIntegration"
+        ],
         "main": [
             {
                 "value": "net.xenyria.xenon.XenonEntrypoint",

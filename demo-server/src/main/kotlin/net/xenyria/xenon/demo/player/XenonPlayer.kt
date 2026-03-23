@@ -1,11 +1,15 @@
 package net.xenyria.xenon.demo.player
 
+import net.kyori.adventure.text.Component
 import net.xenyria.xenon.CHANNEL_ID
+import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.demo.XenonDemoPlugin
 import net.xenyria.xenon.demo.feature.gizmo.XenonGizmos
 import net.xenyria.xenon.demo.feature.overlay.XenonOverlays
 import net.xenyria.xenon.demo.feature.shape.XenonShapes
 import net.xenyria.xenon.protocol.IXenonPacket
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundSetCameraPerspectivePacket
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundUpdateCameraLockPacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeResponsePacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeStartPacket
 import net.xenyria.xenon.protocol.clientbound.state.ClientboundAcknowledgeModeSwitchPacket
@@ -31,7 +35,13 @@ class XenonPlayer(val player: Player) : IXenonClient {
     }
 
     fun update() {
-
+        if (isEditing) {
+            if (selection != null) {
+                player.sendActionBar(Component.text("Currently selected: $selection"))
+            } else {
+                player.sendActionBar(Component.text("<No target selected>"))
+            }
+        }
     }
 
     var isActive = false // Whether the handshake process has been completed successfully
@@ -77,6 +87,14 @@ class XenonPlayer(val player: Player) : IXenonClient {
 
     fun sendMessage(message: String) {
         player.sendMessage(message)
+    }
+
+    fun setCamera(perspective: CameraPerspective) {
+        sendXenonMessage(ClientboundSetCameraPerspectivePacket(perspective))
+    }
+
+    fun setCameraLock(locked: Boolean, perspective: CameraPerspective?) {
+        sendXenonMessage(ClientboundUpdateCameraLockPacket(locked, perspective))
     }
 
 }

@@ -115,12 +115,21 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     private var _previousLocalRotation = Vector3f()
     private var _newLocalRotation = Vector3f()
 
+    private fun getEffectiveNewLocalRotation(): Vector3f {
+        var rotation = Vector3d(_newLocalRotation)
+        val axis = editingAxis
+        if (axis != null && game.hasControlDown()) {
+            rotation = Vector3d(roundToNearestMultiple(rotation, getSnapValue(game), axis))
+        }
+        return Vector3f(rotation.x.toFloat(), rotation.y.toFloat(), rotation.z.toFloat())
+    }
+
     fun getPreviousRotation(axis: Axis): Double {
         return getVectorComponent(axis, _previousObjectRotation)
     }
 
     fun getNewRotation(axis: Axis): Double {
-        return getVectorComponent(axis, _newLocalRotation).toDouble()
+        return getVectorComponent(axis, getEffectiveNewLocalRotation()).toDouble()
     }
 
     fun resetSelectedAxis() {
@@ -182,7 +191,8 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     }
 
     fun getEffectiveRotation(): Vector3d {
-        return Vector3d(target.rotation).sub(_previousObjectRotation)
+        return Vector3d(getEffectiveNewLocalRotation()).sub(_previousObjectRotation)
+        //return Vector3d(target.rotation).sub(_previousObjectRotation)
     }
 
     fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {

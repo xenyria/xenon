@@ -160,8 +160,6 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
         val editingAxis = getEditingAxis()
         if (editingAxis != null) selectedAxis = null
 
-        if (selectedAxis != null) game.editor.updateSelectedGizmo(target.uuid)
-
         DefaultGizmoRenderer.drawGizmo(
             renderer, editingAxis, selectedAxis,
             target.position,

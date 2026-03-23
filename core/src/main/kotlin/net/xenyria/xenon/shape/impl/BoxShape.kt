@@ -2,6 +2,7 @@ package net.xenyria.xenon.shape.impl
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.shape.IEditorShapeProperties
 import net.xenyria.xenon.shape.ShapeType
 import org.joml.Vector3d
 import org.joml.Vector3dc
@@ -18,7 +19,7 @@ class BoxShapeProperties(
     var visibleThroughWalls: Boolean = true,
     var onlyRenderOutline: Boolean = false,
     var centerTextVertically: Boolean = true
-) : net.xenyria.xenon.shape.IEditorShapeProperties() {
+) : IEditorShapeProperties() {
 
     override fun writeToStream(stream: DataOutputStream) {
         stream.writeVec3F(dimensions)

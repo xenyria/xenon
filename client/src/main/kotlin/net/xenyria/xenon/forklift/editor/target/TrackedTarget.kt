@@ -3,6 +3,7 @@ package net.xenyria.xenon.forklift.editor.target
 import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
+import net.xenyria.xenon.forklift.editor.state.GizmoAxisIntersection
 import net.xenyria.xenon.forklift.editor.state.GizmoInteractionResult
 import net.xenyria.xenon.forklift.editor.state.IEditorState
 import net.xenyria.xenon.forklift.render.IGameRenderer
@@ -32,6 +33,10 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
 
     fun getStatusMessage(): Message? {
         return _state.getStatus()
+    }
+
+    fun querySelectionState(): GizmoAxisIntersection? {
+        return _state.querySelectedAxis()
     }
 
 }

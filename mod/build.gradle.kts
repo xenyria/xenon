@@ -13,6 +13,7 @@ plugins {
     id("maven-publish")
     kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "9.1.0"
+    kotlin("plugin.serialization") version "2.3.0"
 }
 
 val minecraft_version: String by project
@@ -20,6 +21,7 @@ val loader_version: String by project
 val fabric_kotlin_version: String by project
 val fabric_api_version: String by project
 val yacl_version: String by project
+val modmenu_version: String by project
 
 base {
     archivesName.set(project.property("archives_base_name") as String)
@@ -42,8 +44,13 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    // YACL
     maven("https://maven.isxander.dev/releases") {
         name = "Xander Maven"
+    }
+    // ModMenu
+    maven("https://maven.terraformersmc.com/") {
+        name = "Terraformers"
     }
     maven { url = uri("https://jitpack.io") }
 }
@@ -57,7 +64,9 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
     modImplementation("dev.isxander:yet-another-config-lib:${yacl_version}")
+    modImplementation("com.terraformersmc:modmenu:${modmenu_version}")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     implementation(project(":core"))

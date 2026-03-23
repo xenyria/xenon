@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.3.0"
+    kotlin("plugin.serialization") version "2.3.0"
     id("maven-publish")
 }
 
@@ -36,6 +37,7 @@ dependencies {
     implementation("org.json:json:20250517")
     implementation("net.openhft:zero-allocation-hashing:0.16")
     api("org.joml:joml:1.10.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 }
 
 java {

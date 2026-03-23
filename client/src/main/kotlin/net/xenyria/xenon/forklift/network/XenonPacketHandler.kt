@@ -2,6 +2,8 @@ package net.xenyria.xenon.forklift.network
 
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.protocol.IXenonPacket
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundSetCameraPerspectivePacket
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundUpdateCameraLockPacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeResponsePacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeStartPacket
 import net.xenyria.xenon.protocol.clientbound.misc.ClientboundUpdateActivityAppPacket
@@ -28,6 +30,16 @@ object XenonPacketHandler {
 
             is ClientboundHandshakeResponsePacket -> {
                 client.startSession(message.canUseEditMode)
+                return true
+            }
+
+            is ClientboundSetCameraPerspectivePacket -> {
+                client.requestCameraPerspective(message.perspective)
+                return true
+            }
+
+            is ClientboundUpdateCameraLockPacket -> {
+                client.updateCameraLock(message.isLocked, message.newMode)
                 return true
             }
 

@@ -2,6 +2,8 @@ package net.xenyria.xenon
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonInfo
+import net.xenyria.xenon.camera.CameraPerspective
+import net.xenyria.xenon.config.Settings
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.Forklift
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
@@ -17,11 +19,12 @@ import org.joml.Vector2d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+val LOGGER: Logger = LoggerFactory.getLogger("Xenon")
+
 class Xenon(val version: String) {
 
     val client = GameClient(this)
     val forklift: Forklift get() = requireNotNull(getForkliftOrNull()) { "Not connected to any supported server" }
-    val logger: Logger = LoggerFactory.getLogger("Xenon")
 
     fun getForkliftOrNull(): Forklift? {
         return _session?.forklift
@@ -34,7 +37,7 @@ class Xenon(val version: String) {
     fun getKeyboardManagerOrNull(): KeyboardManager? = _keyboard
 
     init {
-        logger.info("Starting up Xenon...")
+        LOGGER.info("Starting up Xenon...")
     }
 
     fun initialize(game: Minecraft) {
@@ -46,7 +49,7 @@ class Xenon(val version: String) {
         XenonRenderPipelines.initialize()
         ForkliftRenderer.initialize()
         ForkliftOverlayRenderer.initialize(this)
-        logger.info("Xenon (v${version}) has been initialized.")
+        LOGGER.info("Xenon (v${version}) has been initialized.")
     }
 
     fun onTick() {
@@ -83,6 +86,7 @@ class Xenon(val version: String) {
     }
 
     fun toggleEditMode(): Boolean {
+        if (!client.xenonConfig.developer.enableGizmos) return false
         val forklift = getForkliftOrNull() ?: return false
         return forklift.editor.toggleEditMode()
     }
@@ -121,6 +125,18 @@ class Xenon(val version: String) {
         _session?.updateActivity(activityData)
     }
 
+    fun requestCameraPerspective(perspective: CameraPerspective) {
+        _session?.requestCameraPerspective(perspective)
+    }
+
+    fun updateCameraLock(locked: Boolean, newMode: CameraPerspective?) {
+        _session?.updateCameraLock(locked, newMode)
+    }
+
+    fun isCameraModeLocked(): Boolean {
+        return _session?.isCameraModeLocked() ?: return false
+    }
+
     companion object {
         private var _xenon: Xenon? = null
         val instance: Xenon get() = requireNotNull(_xenon) { "Xenon is not initialized" }
@@ -131,6 +147,7 @@ class Xenon(val version: String) {
 
         fun create(version: String) {
             XenonPacketListener.initialize()
+            Settings.create()
             Keybinds.register()
             _xenon = Xenon(version)
         }

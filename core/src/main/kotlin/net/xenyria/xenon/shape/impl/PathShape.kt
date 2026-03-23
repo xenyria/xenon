@@ -2,6 +2,7 @@ package net.xenyria.xenon.shape.impl
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.shape.IEditorShapeProperties
 import net.xenyria.xenon.shape.ShapeType
 import org.joml.Vector3dc
 import org.json.JSONObject
@@ -9,7 +10,7 @@ import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-class PathShapeProperties : net.xenyria.xenon.shape.IEditorShapeProperties() {
+class PathShapeProperties : IEditorShapeProperties() {
 
     lateinit var color: Color
         private set

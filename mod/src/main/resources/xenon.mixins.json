@@ -12,7 +12,8 @@
         "MouseInvoker",
         "DisconnectMixin",
         "ChatMixin",
-        "HudMixin"
+        "HudMixin",
+        "CameraModeMixin"
     ],
     "injectors": {
         "defaultRequire": 1

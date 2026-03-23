@@ -5,6 +5,7 @@ import net.xenyria.xenon.core.putColor
 import net.xenyria.xenon.core.readRGBA
 import net.xenyria.xenon.core.writeRGBA
 import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.shape.IEditorShapeProperties
 import net.xenyria.xenon.shape.ShapeType
 import org.json.JSONObject
 import java.awt.Color
@@ -15,7 +16,7 @@ class SphereShapeProperties(
     radius: Float = 1.0F,
     lineColor: Color = Color.WHITE,
     visibleThroughWalls: Boolean = false
-) : net.xenyria.xenon.shape.IEditorShapeProperties() {
+) : IEditorShapeProperties() {
 
     var radius: Float = radius
         private set

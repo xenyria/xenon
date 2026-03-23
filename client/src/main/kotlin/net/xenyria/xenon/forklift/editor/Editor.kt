@@ -1,5 +1,6 @@
 package net.xenyria.xenon.forklift.editor
 
+import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
@@ -109,6 +110,12 @@ interface IGameClient {
     fun updateActivity(activityData: ActivityData)
     fun updateActivityAppId(appId: Long)
 
+    fun updateCameraLock(isLocked: Boolean, newMode: CameraPerspective?)
+    fun requestCameraPerspective(perspective: CameraPerspective)
+
+    fun setCameraPerspective(perspective: CameraPerspective)
+    fun getCameraPerspective(): CameraPerspective
+
     val forkliftConfig: ForkliftConfig
     val xenonConfig: XenonConfig
 
@@ -122,7 +129,7 @@ class Editor(val client: IGameClient) {
     val shapeManager = ShapeManager(client)
     val overlayManager = EditorOverlayManager(client)
     val timeoutManager = TimeoutManager()
-    var isActive: Boolean = true
+    var isActive: Boolean = false
 
     @Synchronized
     fun updateSelectedGizmo(gizmoId: UUID?) {
@@ -232,16 +239,21 @@ class Editor(val client: IGameClient) {
         return Message(components)
     }
 
+    fun leaveEditMode() {
+        if (!timeoutManager.addTimeout("edit-mode") {
+                isActive = true
+                client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
+            }) {
+            return
+        }
+        client.sendPacket(ServerboundRequestModeSwitchPacket(false))
+    }
+
     fun toggleEditMode(): Boolean {
         if (!isActive) {
             enterEditMode()
-        }
-        isActive = !isActive
-
-        if (isActive) {
-            client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_entered_edit_mode"))
         } else {
-            client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_exited_edit_mode"))
+            leaveEditMode()
         }
         return true
     }

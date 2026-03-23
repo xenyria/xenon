@@ -1,5 +1,7 @@
 package net.xenyria.xenon.protocol
 
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundSetCameraPerspectivePacket
+import net.xenyria.xenon.protocol.clientbound.camera.ClientboundUpdateCameraLockPacket
 import net.xenyria.xenon.protocol.clientbound.gizmo.ClientboundExitGizmoEditModePacket
 import net.xenyria.xenon.protocol.clientbound.gizmo.ClientboundGizmoListPacket
 import net.xenyria.xenon.protocol.clientbound.gizmo.ClientboundUpdateGizmoPacket
@@ -79,6 +81,11 @@ object XenonPacketRegistry {
     // Activity
     val CLIENTBOUND_UPDATE_ACTIVITY = makePacketType("update_activity", ::ClientboundUpdateActivityPacket)
     val CLIENTBOUND_UPDATE_ACTIVITY_APP = makePacketType("update_activity_app", ::ClientboundUpdateActivityAppPacket)
+
+    // Camera
+    val CLIENTBOUND_UPDATE_CAMERA_LOCK = makePacketType("update_camera_lock", ::ClientboundUpdateCameraLockPacket)
+    val CLIENTBOUND_UPDATE_CAMERA_PERSPECTIVE = makePacketType("set_camera_perspective", ::ClientboundSetCameraPerspectivePacket)
+
 }
 
 private class RegisteredPacket(val constructor: () -> IXenonPacket)
