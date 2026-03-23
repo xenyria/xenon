@@ -232,7 +232,11 @@ class Editor(val client: IGameClient) {
         }
         isActive = !isActive
 
-        client.sendMessage(MessageFormatter.formatForkliftMessage("state=$isActive"))
+        if (isActive) {
+            client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_entered_edit_mode"))
+        } else {
+            client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_exited_edit_mode"))
+        }
         return true
     }
 

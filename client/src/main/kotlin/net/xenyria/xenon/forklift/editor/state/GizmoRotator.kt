@@ -266,7 +266,7 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
             val intersection = RayCast.intersection(box.box, cameraPosition, cameraDirection, 10.0)
             if (intersection != null) {
                 val distance = intersection.hitPosition.distance(position)
-                val maxDeviance = 0.035
+                val maxDeviance = 0.075
                 var isWithinRange = distance >= maxRadius - maxDeviance && distance <= maxRadius + maxDeviance
                 if (axis == Axis.Y && (intersection.face != CubeFace.UP && intersection.face != CubeFace.DOWN))
                     isWithinRange = true

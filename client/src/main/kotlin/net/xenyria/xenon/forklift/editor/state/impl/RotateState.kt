@@ -23,7 +23,7 @@ import org.joml.Vector3d
 import java.awt.Color
 import kotlin.math.abs
 
-const val ROTATION_GIZMO_RADIUS = 0.5
+const val ROTATION_GIZMO_RADIUS = 0.75
 const val ROTATION_GIZMO_LINE_WIDTH = 8.0F
 
 class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {

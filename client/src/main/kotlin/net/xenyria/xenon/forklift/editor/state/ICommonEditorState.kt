@@ -83,7 +83,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             val center = (Vector3d(from).add(to)).div(2.0)
             val tip = Vector3d(to)
 
-            val thin = .05
+            val thin = .08
             val lineBox = OBB(
                 center,
                 if (axis == Axis.X) 1.0 else thin,
@@ -109,12 +109,6 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             intersectables.add(axis to listOf(lineBox, tipBox))
         }
 
-        /**
-         * I'm aware that this is extremely stupid to do. Keep in mind that we can only do ray-casts with axis aligned boxes at the moment.
-         * The only option I was able to come up with was creating boxes along the axis line and then doing ray-casts
-         * to check which axis the user is currently looking at.
-         * It's dumb, and I'm aware of that. It's fast & accurate enough to not cause problems at the moment.
-         */
         val camera = game.getCamera()
         val results = ArrayList<Pair<Axis, Double>>()
         for ((axis, boxes) in intersectables) {
