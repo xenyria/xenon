@@ -3,5 +3,3 @@ version: '1.0.0'
 main: net.xenyria.xenon.demo.XenonDemoPlugin
 api-version: '1.21.11'
 load: STARTUP
-depend:
-  - packetevents

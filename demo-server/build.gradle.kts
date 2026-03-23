@@ -15,8 +15,6 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"
     }
-    maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
-    maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
 }
 
 tasks {
@@ -29,7 +27,6 @@ dependencies {
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(project(":core"))
-    compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
 }
 
 kotlin {

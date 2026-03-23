@@ -1,7 +1,6 @@
 package net.xenyria.xenon.demo.player
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPluginMessage
+import net.xenyria.xenon.CHANNEL_ID
 import net.xenyria.xenon.demo.XenonDemoPlugin
 import net.xenyria.xenon.demo.feature.gizmo.XenonGizmos
 import net.xenyria.xenon.demo.feature.overlay.XenonOverlays
@@ -73,9 +72,7 @@ class XenonPlayer(val player: Player) : IXenonClient {
         }
 
     override fun sendPluginMessage(channel: String, data: ByteArray) {
-        //player.sendPluginMessage(XenonDemoPlugin.instance, "xenyria:xenon", data)
-        val msg = WrapperPlayServerPluginMessage(channel, data)
-        PacketEvents.getAPI().playerManager.sendPacket(player, msg)
+        player.sendPluginMessage(XenonDemoPlugin.instance, CHANNEL_ID, data)
     }
 
 }
