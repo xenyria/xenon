@@ -5,13 +5,13 @@ import de.jcm.discordgamesdk.CreateParams
 import de.jcm.discordgamesdk.activity.Activity
 import de.jcm.discordgamesdk.activity.ActivityType
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 class DiscordAPI {
 
     private val _clientId: Long
     private var _thread: Thread? = null
     private var _running: Boolean = false
+    private var _lastActivity: ActivityData? = null
     var activitySupplier: (() -> ActivityData)? = null
 
     constructor(clientId: Long) {
@@ -35,7 +35,7 @@ class DiscordAPI {
                         } else {
                             applyActivity(core, activity)
                         }
-                        Thread.sleep(100)
+                        Thread.sleep(1000)
                         core.runCallbacks()
                     }
                     core.activityManager().clearActivity()
@@ -59,6 +59,8 @@ class DiscordAPI {
             core.activityManager().clearActivity()
             return
         }
+        if (activityData == _lastActivity) return
+
         val activity = Activity()
         if (activityData.state != null)
             activity.state = padMinLength(activityData.state!!, 2)
@@ -67,12 +69,9 @@ class DiscordAPI {
 
         if (activityData.start != null) {
             activity.timestamps().start = Instant.ofEpochMilli(activityData.start!!)
-        } else if (activityData.remaining != null) {
-            // TODO This is broken for some unknown reason
-            activity.timestamps().clearStart()
-            activity.timestamps().end = Instant.now().plusSeconds(60L).plus(3, ChronoUnit.HOURS)
         }
         activity.type = ActivityType.PLAYING
+        _lastActivity = activityData
         core.activityManager().updateActivity(activity)
     }
 

@@ -4,17 +4,34 @@ import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeResponsePacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeStartPacket
+import net.xenyria.xenon.protocol.clientbound.misc.ClientboundUpdateActivityAppPacket
+import net.xenyria.xenon.protocol.clientbound.misc.ClientboundUpdateActivityPacket
 import net.xenyria.xenon.protocol.serverbound.handshake.ServerboundHandshakeRequestPacket
 
 object XenonPacketHandler {
     fun handlePacket(client: IGameClient, message: IXenonPacket): Boolean {
-        if (message is ClientboundHandshakeStartPacket) {
-            client.sendPacket(ServerboundHandshakeRequestPacket(client.getModVersion()))
-            return true
-        } else if (message is ClientboundHandshakeResponsePacket) {
-            client.startSession(message.canUseEditMode)
-            return true
+        when (message) {
+            is ClientboundHandshakeStartPacket -> {
+                client.sendPacket(ServerboundHandshakeRequestPacket(client.getModVersion()))
+                return true
+            }
+
+            is ClientboundUpdateActivityPacket -> {
+                client.updateActivity(message.activityData)
+                return true
+            }
+
+            is ClientboundUpdateActivityAppPacket -> {
+                client.updateActivityAppId(message.appId)
+                return true
+            }
+
+            is ClientboundHandshakeResponsePacket -> {
+                client.startSession(message.canUseEditMode)
+                return true
+            }
+
+            else -> return false
         }
-        return false
     }
 }

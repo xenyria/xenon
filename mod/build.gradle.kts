@@ -42,10 +42,10 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
-    maven { url = uri("https://jitpack.io") }
     maven("https://maven.isxander.dev/releases") {
         name = "Xander Maven"
     }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -58,12 +58,12 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
     modImplementation("dev.isxander:yet-another-config-lib:${yacl_version}")
 
+    implementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
+    shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
     implementation(project(":core"))
     shadow(project(":core"))
     implementation(project(":client"))
     shadow(project(":client"))
-    implementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
-    shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
 }
 
 tasks.processResources {

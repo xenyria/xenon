@@ -6,6 +6,8 @@ import net.xenyria.xenon.protocol.clientbound.gizmo.ClientboundUpdateGizmoPacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeResponsePacket
 import net.xenyria.xenon.protocol.clientbound.handshake.ClientboundHandshakeStartPacket
 import net.xenyria.xenon.protocol.clientbound.misc.ClientboundResetPacket
+import net.xenyria.xenon.protocol.clientbound.misc.ClientboundUpdateActivityAppPacket
+import net.xenyria.xenon.protocol.clientbound.misc.ClientboundUpdateActivityPacket
 import net.xenyria.xenon.protocol.clientbound.overlay.ClientboundRemoveOverlaysPacket
 import net.xenyria.xenon.protocol.clientbound.overlay.ClientboundResetOverlaysPacket
 import net.xenyria.xenon.protocol.clientbound.overlay.ClientboundUpdateOverlaysPacket
@@ -26,10 +28,10 @@ import kotlin.concurrent.write
 
 object XenonPacketRegistry {
 
-    private val _registeredPackets = HashMap<Int, net.xenyria.xenon.protocol.RegisteredPacket>()
+    private val _registeredPackets = HashMap<Int, RegisteredPacket>()
     private val _lock = ReentrantReadWriteLock()
 
-    fun makePacketType(name: String, constructor: () -> net.xenyria.xenon.protocol.IXenonPacket): net.xenyria.xenon.protocol.XenonPacketType {
+    fun makePacketType(name: String, constructor: () -> IXenonPacket): XenonPacketType {
         _lock.write {
             val id = _registeredPackets.size
             val type = XenonPacketType(id, name)
@@ -38,7 +40,7 @@ object XenonPacketRegistry {
         }
     }
 
-    fun createEmpty(id: Int): net.xenyria.xenon.protocol.IXenonPacket {
+    fun createEmpty(id: Int): IXenonPacket {
         _lock.read {
             val entry = _registeredPackets[id]
             requireNotNull(entry) { "No packet registered for id $id" }
@@ -73,6 +75,10 @@ object XenonPacketRegistry {
     val CLIENTBOUND_RESET_OVERLAYS = makePacketType("reset_overlays", ::ClientboundResetOverlaysPacket)
     val CLIENTBOUND_REMOVE_OVERLAYS = makePacketType("remove_overlays", ::ClientboundRemoveOverlaysPacket)
     val CLIENTBOUND_UPDATE_OVERLAYS = makePacketType("update_overlays", ::ClientboundUpdateOverlaysPacket)
+
+    // Activity
+    val CLIENTBOUND_UPDATE_ACTIVITY = makePacketType("update_activity", ::ClientboundUpdateActivityPacket)
+    val CLIENTBOUND_UPDATE_ACTIVITY_APP = makePacketType("update_activity_app", ::ClientboundUpdateActivityAppPacket)
 }
 
-private class RegisteredPacket(val constructor: () -> net.xenyria.xenon.protocol.IXenonPacket)
+private class RegisteredPacket(val constructor: () -> IXenonPacket)

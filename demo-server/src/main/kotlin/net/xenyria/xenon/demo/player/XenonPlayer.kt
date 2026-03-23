@@ -75,4 +75,8 @@ class XenonPlayer(val player: Player) : IXenonClient {
         player.sendPluginMessage(XenonDemoPlugin.instance, CHANNEL_ID, data)
     }
 
+    fun sendMessage(message: String) {
+        player.sendMessage(message)
+    }
+
 }

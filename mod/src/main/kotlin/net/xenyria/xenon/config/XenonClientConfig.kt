@@ -1,6 +1,5 @@
 package net.xenyria.xenon.config
 
-import net.xenyria.xenon.discord.DiscordActivityManager
 import net.xenyria.xenon.xenon
 
 object XenonClientConfig {
@@ -15,7 +14,7 @@ object XenonClientConfig {
         _config.misc.discordActivityMode = enabled
 
         val session = xenon.getSessionOrNull() ?: return
-        if (!session.canApplyActivity()) DiscordActivityManager.stop()
+        if (!session.canApplyActivity()) session.stopActivity()
     }
 
     @Synchronized

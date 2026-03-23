@@ -1,6 +1,6 @@
 package net.xenyria.xenon.discord
 
-object DiscordActivityManager {
+class DiscordActivityManager {
 
     private var _api: DiscordAPI? = null
     private var _appId: Long? = null
@@ -12,11 +12,18 @@ object DiscordActivityManager {
     }
 
     @Synchronized
+    fun updateAppId(appId: Long) {
+        _appId = appId
+    }
+
+    @Synchronized
     fun update(data: ActivityData) {
         val appId = _appId ?: return
         if (_api == null) {
             val api = DiscordAPI(appId)
             api.activitySupplier = { getLastActivity() ?: data }
+            api.start()
+            _api = api
         }
         _lastActivity = data
     }

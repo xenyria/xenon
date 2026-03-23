@@ -129,7 +129,7 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     }
 
     fun getSnapValue(game: IGameClient): Double {
-        return game.config.rotationGridSnap
+        return game.forkliftConfig.rotationGridSnap
     }
 
     fun onMouseMove(game: IGameClient, movement: Vector2d) {

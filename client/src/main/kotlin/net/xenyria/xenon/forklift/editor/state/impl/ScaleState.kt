@@ -27,7 +27,7 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     private var initialScaleValue: Vector3dc = Vector3d(0.0)
 
     fun getSnapValue(): Double {
-        return game.config.scaleGridSnap
+        return game.forkliftConfig.scaleGridSnap
     }
 
     override fun beginEdit() {

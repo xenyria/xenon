@@ -2,7 +2,10 @@ package net.xenyria.xenon
 
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
 import net.minecraft.world.phys.Vec3
+import net.xenyria.xenon.config.XenonClientConfig
+import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.core.calculateDirection
+import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.config.ForkliftConfig
 import net.xenyria.xenon.forklift.editor.Editor
@@ -112,6 +115,14 @@ class GameClient(xenon: Xenon) : IGameClient {
         return xenon.getForkliftOrNull()?.editor?.dragHandler?.isActive() ?: false
     }
 
+    override fun updateActivity(activityData: ActivityData) {
+        xenon.updateActivity(activityData)
+    }
+
+    override fun updateActivityAppId(appId: Long) {
+        xenon.updateActivityAppId(appId)
+    }
+
     @Synchronized
     override fun updateInternalMousePosition(x: Double, y: Double) {
         val invoker = (game.mouseHandler as MouseInvoker)
@@ -124,6 +135,7 @@ class GameClient(xenon: Xenon) : IGameClient {
         return game.player?.uuid
     }
 
-    override val config: ForkliftConfig = ForkliftConfig()
+    override val forkliftConfig: ForkliftConfig = ForkliftConfig()
+    override val xenonConfig: XenonConfig get() = XenonClientConfig.config
     override val editor: Editor get() = xenon.forklift.editor
 }

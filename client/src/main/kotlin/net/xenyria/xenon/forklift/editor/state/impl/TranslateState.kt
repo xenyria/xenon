@@ -30,7 +30,7 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
     }
 
     fun getSnapValue(client: IGameClient): Double {
-        return client.config.translationGridSnap
+        return client.forkliftConfig.translationGridSnap
     }
 
     @Synchronized

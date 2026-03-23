@@ -1,5 +1,7 @@
 package net.xenyria.xenon.forklift.editor
 
+import net.xenyria.xenon.config.XenonConfig
+import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.TransformationMode
 import net.xenyria.xenon.forklift.config.ForkliftConfig
@@ -104,7 +106,11 @@ interface IGameClient {
 
     fun isDragging(): Boolean
 
-    val config: ForkliftConfig
+    fun updateActivity(activityData: ActivityData)
+    fun updateActivityAppId(appId: Long)
+
+    val forkliftConfig: ForkliftConfig
+    val xenonConfig: XenonConfig
 
     val editor: Editor
 }

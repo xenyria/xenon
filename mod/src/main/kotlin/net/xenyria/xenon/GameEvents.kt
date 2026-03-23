@@ -2,7 +2,6 @@ package net.xenyria.xenon
 
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonInfo
-import net.xenyria.xenon.discord.DiscordActivityManager
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.input.keyboard.toKeyAction
 import org.joml.Vector2d
@@ -29,8 +28,7 @@ object GameEvents {
     }
 
     fun onDisconnect() {
-        Xenon.getOrNull()?.reset()
-        DiscordActivityManager.stop()
+        Xenon.getOrNull()?.endSession()
     }
 
     fun onMouseButton(windowId: Long, mouseButtonInfo: MouseButtonInfo, action: Int, info: CallbackInfo) {

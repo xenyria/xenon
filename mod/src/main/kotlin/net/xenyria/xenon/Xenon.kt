@@ -2,6 +2,7 @@ package net.xenyria.xenon
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonInfo
+import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.Forklift
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.forklift.render.XenonRenderPipelines
@@ -57,8 +58,9 @@ class Xenon(val version: String) {
         }
     }
 
-    fun reset() {
+    fun endSession() {
         getForkliftOrNull()?.reset()
+        _session?.destroy()
         this._session = null
     }
 
@@ -109,6 +111,14 @@ class Xenon(val version: String) {
     private var _pendingPacket: IXenonPacket? = null
     fun debouncePacket(packet: ServerboundUpdateGizmoPacket) {
         _pendingPacket = packet
+    }
+
+    fun updateActivityAppId(appId: Long) {
+        _session?.updateActivityAppId(appId)
+    }
+
+    fun updateActivity(activityData: ActivityData) {
+        _session?.updateActivity(activityData)
     }
 
     companion object {

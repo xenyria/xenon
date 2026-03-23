@@ -1,5 +1,7 @@
 package net.xenyria.xenon.demo
 
+import net.xenyria.xenon.demo.activity.XenonActivityManager
+import net.xenyria.xenon.demo.command.DiscordActivityCommand
 import net.xenyria.xenon.demo.command.GizmoCommand
 import net.xenyria.xenon.demo.communication.XenonCommunication
 import net.xenyria.xenon.demo.listener.PlayerListener
@@ -14,7 +16,9 @@ class XenonDemoPlugin : JavaPlugin() {
         _instance = this
         XenonPlayerManager.startUpdateLoop()
         XenonCommunication.initialize()
+        XenonActivityManager.initialize()
         registerCommand("gizmo", GizmoCommand())
+        registerCommand("discord_activity", DiscordActivityCommand())
         Bukkit.getPluginManager().registerEvents(PlayerListener, this)
     }
 
