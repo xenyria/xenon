@@ -12,7 +12,7 @@ object Keybinds {
 
     val TOGGLE_EDIT_MODE = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
-            "key.forklift.general",
+            "forklift_key_edit_mode",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_F4,
             Category.MULTIPLAYER

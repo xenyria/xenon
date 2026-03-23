@@ -13,5 +13,6 @@
     "forklift_edit_mode_timeout": "Failed to enable edit mode: Timed out.",
     "forklift_target_already_being_edited": "Another player is currently editing this entity.",
     "forklift_entered_edit_mode": "Edit mode enabled.",
-    "forklift_exited_edit_mode": "Edit mode disabled."
+    "forklift_exited_edit_mode": "Edit mode disabled.",
+    "forklift_key_edit_mode": "Toggle Edit Mode"
 }
