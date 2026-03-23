@@ -7,7 +7,9 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.resources.Identifier
 import net.xenyria.xenon.MOD_ID
 import net.xenyria.xenon.Xenon
+import net.xenyria.xenon.config.XenonClientConfig
 import net.xenyria.xenon.forklift.overlay.OverlayAnchor
+import net.xenyria.xenon.forklift.overlay.TextOverlayData
 import net.xenyria.xenon.game
 import net.xenyria.xenon.message.FORKLIFT_COLOR
 import net.xenyria.xenon.message.Message
@@ -22,13 +24,8 @@ class ForkliftOverlayRenderer(private val xenon: Xenon) {
         if (forklift != null && forklift.editor.isActive) {
             renderEditorOverlay(graphics)
         }
-        for (anchor in OverlayAnchor.entries) {
-            //val textOverlay = TextOverlayData(
-            //    "test",
-            //    components = "{\"text\": \"$anchor\"}",
-            //    anchor = anchor
-            //)
-            //TextOverlayRenderer.render(graphics, textOverlay)
+        if (XenonClientConfig.config.developer.enableOverlays) {
+            _visibleOverlays.forEach { TextOverlayRenderer.render(graphics, it) }
         }
     }
 
@@ -64,6 +61,11 @@ class ForkliftOverlayRenderer(private val xenon: Xenon) {
 
 
     companion object {
+        private var _visibleOverlays = ArrayList<TextOverlayData>()
+        fun updateOverlays(overlays: List<TextOverlayData>) {
+            this._visibleOverlays = ArrayList(overlays)
+        }
+
         fun initialize(xenon: Xenon) {
             val renderer = ForkliftOverlayRenderer(xenon)
             HudElementRegistry.attachElementBefore(

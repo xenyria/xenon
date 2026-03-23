@@ -30,11 +30,6 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
         _state.handleMouseMovement(delta)
     }
 
-
-    fun isInFieldOfView(): Boolean {
-        return true
-    }
-
     fun getStatusMessage(): Message? {
         return _state.getStatus()
     }

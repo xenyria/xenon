@@ -62,9 +62,9 @@ object DefaultGizmoRenderer {
         axisRotation: Vector3dc
     ) {
         val axisEnd = Vector3d(origin)
-        axisEnd.add(Vector3d(direction).mul(AXIS_EDIT_LENGTH))
+        axisEnd.add(Vector3d(direction).mul(AXIS_EDIT_LENGTH + MAX_TIP_LENGTH))
 
-        val box = makeCenteredBox(axisEnd, TIP_BOUNDING_BOX_BASE_SIZE, TIP_BOUNDING_BOX_BASE_SIZE).grow(MAX_TIP_LENGTH, MAX_TIP_LENGTH, MAX_TIP_LENGTH)
+        val box = makeCenteredBox(axisEnd, 0.0, 0.0).grow(MAX_TIP_LENGTH, MAX_TIP_LENGTH, MAX_TIP_LENGTH)
         renderer.drawPrimitives(listOf(BoxPrimitive(box, color, axisRotation)), true)
     }
 

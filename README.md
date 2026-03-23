@@ -1,5 +1,5 @@
 > [!WARNING]
-> This project is still heavily work in progress and completely non-functional at the moment.
+> This project is still heavily work in progress at the moment. Expect a lot of breaking changes and incomplete features.
 
 # Xenon
 
@@ -21,6 +21,7 @@ Although this mod is mainly focused on improving the experience on the Xenyria s
 - `core`: Contains shared code that is used by both the client and server. (packets, utilities & common logic)
 - `client`: Contains client-specific code, such as debug rendering and editor functionality.
 - `mod`: Contains the Fabric mod implementation for the client.
+- `demo-server`: Contains a simple Paper plugin that demonstrates how to use the core module on the server side. (requires packetevents)
 
 ## Maven Repository
 

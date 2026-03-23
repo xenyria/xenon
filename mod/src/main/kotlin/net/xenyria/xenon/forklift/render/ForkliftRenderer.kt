@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.MappableRingBuffer
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.world.phys.Vec3
 import net.xenyria.xenon.MOD_ID
+import net.xenyria.xenon.config.XenonClientConfig
+import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
@@ -34,22 +36,24 @@ val MODEL_OFFSET: Vector3f = Vector3f()
 val TEXTURE_MATRIX: Matrix4f = Matrix4f()
 
 fun compileShapes(
-    context: WorldRenderContext,
+    config: XenonConfig,
     primitives: List<IRenderPrimitive>,
     shapes: List<IEditorShape<*>>,
-    gizmos: List<RenderableGizmo>
+    gizmos: List<RenderableGizmo>,
 ): List<RenderPass> {
     val renderAdapter = MinecraftRenderAdapter()
     renderAdapter.drawPrimitives(primitives, false)
 
     val forklift = xenon.getForkliftOrNull()
-    if (forklift != null && forklift.editor.isActive)
+    if (forklift != null && forklift.editor.isActive && config.developer.enableGizmos)
         for (gizmo in gizmos)
             gizmo.target.render(renderAdapter, gizmo.selected, gizmo.index)
-    
-    for (shape in shapes) {
-        val renderer = ShapeRenderers.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
-        renderer.drawShape(renderAdapter, shape)
+
+    if (config.developer.enableGizmos) {
+        for (shape in shapes) {
+            val renderer = ShapeRenderers.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
+            renderer.drawShape(renderAdapter, shape)
+        }
     }
     renderAdapter.flush()
     return renderAdapter.getRenderPasses()
@@ -92,7 +96,10 @@ object ForkliftRenderer {
 
     fun render(context: WorldRenderContext) {
         for (pass in compileShapes(
-            context, _renderState.additionalPrimitives, _renderState.shapes, _renderState.gizmos
+            XenonClientConfig.config,
+            _renderState.additionalPrimitives,
+            _renderState.shapes,
+            _renderState.gizmos,
         )) {
             drawPrimitives(pass, context)
         }

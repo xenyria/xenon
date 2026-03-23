@@ -5,7 +5,11 @@ import net.xenyria.xenon.message.Message
 
 fun Message.toComponent(): Component {
     val components = components.map {
-        val component = Component.literal(it.text)
+        val component = if (it.isTranslated) {
+            Component.literal(it.text)
+        } else {
+            Component.translatable(it.text)
+        }
         var style = component.style
         style = style.withColor(it.color.rgb)
         component.style = style

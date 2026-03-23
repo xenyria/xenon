@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.editor
 
-import net.xenyria.xenon.packet.serverbound.gizmo.ServerboundReleaseGizmoPacket
-import net.xenyria.xenon.packet.serverbound.gizmo.ServerboundRequestGizmoPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundReleaseGizmoPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundRequestGizmoPacket
 import org.joml.Vector2d
 import java.util.*
 

@@ -1,8 +1,11 @@
 package net.xenyria.xenon.forklift.editor
 
 import net.xenyria.xenon.forklift.GameCamera
+import net.xenyria.xenon.forklift.TransformationMode
 import net.xenyria.xenon.forklift.config.ForkliftConfig
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
+import net.xenyria.xenon.forklift.editor.overlay.EditorOverlayManager
+import net.xenyria.xenon.forklift.editor.shape.ShapeManager
 import net.xenyria.xenon.forklift.editor.state.GizmoInteractionResult
 import net.xenyria.xenon.forklift.editor.state.IEditorState
 import net.xenyria.xenon.forklift.editor.state.impl.RotateState
@@ -14,11 +17,16 @@ import net.xenyria.xenon.forklift.editor.target.TrackedTarget
 import net.xenyria.xenon.forklift.gizmo.AXIS_X_COLOR
 import net.xenyria.xenon.forklift.gizmo.AXIS_Y_COLOR
 import net.xenyria.xenon.forklift.gizmo.AXIS_Z_COLOR
+import net.xenyria.xenon.forklift.gizmo.GizmoData
+import net.xenyria.xenon.forklift.overlay.TextOverlayData
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.message.MessageComponent
 import net.xenyria.xenon.message.MessageFormatter
-import net.xenyria.xenon.packet.IXenonPacket
-import net.xenyria.xenon.packet.serverbound.gizmo.ServerboundRequestGizmoPacket
+import net.xenyria.xenon.protocol.IXenonPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundRequestGizmoPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
+import net.xenyria.xenon.protocol.serverbound.state.ServerboundRequestModeSwitchPacket
+import net.xenyria.xenon.shape.IEditorShape
 import org.joml.Vector2d
 import org.joml.Vector3dc
 import java.awt.Color
@@ -50,6 +58,14 @@ enum class EditorMode(val index: Int, val displayName: String, val color: Color)
         fun byId(id: Int): EditorMode? {
             return entries.find { it.index == id }
         }
+
+        fun from(mode: TransformationMode): EditorMode {
+            return when (mode) {
+                TransformationMode.TRANSLATE -> TRANSLATE
+                TransformationMode.ROTATE -> ROTATE
+                TransformationMode.SCALE -> SCALE
+            }
+        }
     }
 }
 
@@ -76,7 +92,17 @@ interface IGameClient {
 
     fun getPlayerId(): UUID?
 
-    fun renderGizmos(renderList: List<RenderableGizmo>) {}
+    fun renderGizmos(renderList: List<RenderableGizmo>)
+    fun renderShapes(shapes: List<IEditorShape<*>>)
+    fun renderOverlays(overlays: List<TextOverlayData>)
+
+    fun startSession(canUseEditMode: Boolean)
+
+    fun getModVersion(): String
+
+    fun debounceGizmoPacket(packet: ServerboundUpdateGizmoPacket)
+
+    fun isDragging(): Boolean
 
     val config: ForkliftConfig
 
@@ -87,6 +113,9 @@ class Editor(val client: IGameClient) {
 
     val dragHandler = EditorDragHandler(client)
     val targetManager = TargetManager(client)
+    val shapeManager = ShapeManager(client)
+    val overlayManager = EditorOverlayManager(client)
+    val timeoutManager = TimeoutManager()
     var isActive: Boolean = true
 
     @Synchronized
@@ -96,16 +125,16 @@ class Editor(val client: IGameClient) {
 
     @Synchronized
     fun onTick() {
+        timeoutManager.timeoutExpiredRequests()
         targetManager.onTick()
     }
 
     fun reset() {
         dragHandler.reset()
         targetManager.reset()
-    }
-
-    fun getCamera(): GameCamera {
-        return client.getCamera()
+        timeoutManager.timeoutExpiredRequests()
+        shapeManager.reset()
+        overlayManager.reset()
     }
 
     fun selectMode(numberKey: Int) {
@@ -133,13 +162,13 @@ class Editor(val client: IGameClient) {
     @Synchronized
     fun onMouseButton(event: MouseButtonEvent): Boolean {
         if (!isActive) return false
-        for (candidate in targetManager.getAvailableTargets()) {
+        for (candidate in targetManager.getSortedTargets()) {
             val result = candidate.onInteract(event)
             if (result == GizmoInteractionResult.NONE) continue
 
             if (result == GizmoInteractionResult.START_EDIT) {
                 if (!targetManager.canEditTarget(candidate.target.uuid)) {
-                    client.sendMessage(MessageFormatter.formatForkliftMessage("Another player is currently editing this entity."))
+                    client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_target_already_being_edited"))
                     return false
                 }
 
@@ -198,9 +227,60 @@ class Editor(val client: IGameClient) {
     }
 
     fun toggleEditMode(): Boolean {
+        if (!isActive) {
+            enterEditMode()
+        }
         isActive = !isActive
+
         client.sendMessage(MessageFormatter.formatForkliftMessage("state=$isActive"))
         return true
+    }
+
+    fun acknowledgeEditMode(newState: Boolean) {
+        timeoutManager.removeTimeout("edit-mode")
+        isActive = newState
+    }
+
+    private fun enterEditMode() {
+        if (!timeoutManager.addTimeout("edit-mode") {
+                isActive = false
+                client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
+            }) {
+            return
+        }
+        client.sendPacket(ServerboundRequestModeSwitchPacket(true))
+    }
+
+    fun exitDragMode() {
+        dragHandler.exitDragMode()
+    }
+
+    fun updateShapes(shapes: List<IEditorShape<*>>) {
+        shapeManager.updateShapes(shapes)
+    }
+
+    fun resetShapes() {
+        shapeManager.reset()
+    }
+
+    fun removeShapes(shapeIds: List<String>) {
+        shapeManager.removeShapes(shapeIds.toSet())
+    }
+
+    fun removeOverlays(overlays: List<String>) {
+        overlayManager.removeOverlays(overlays.toSet())
+    }
+
+    fun resetOverlays() {
+        overlayManager.reset()
+    }
+
+    fun updateGizmos(added: List<GizmoData>, removed: List<UUID>, updated: List<GizmoData>) {
+        targetManager.updateGizmos(added, removed, updated)
+    }
+
+    fun updateOverlays(overlays: List<TextOverlayData>) {
+        overlayManager.updateOverlays(overlays)
     }
 
 }

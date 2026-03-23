@@ -58,6 +58,12 @@ class OBB(position: Vector3dc, sizeX: Double, sizeY: Double, sizeZ: Double) {
         return overlaps(OBB(boundingBox.center, widthX, widthY, widthZ))
     }
 
+    fun setOrientation(x: Vector3dc, y: Vector3dc, z: Vector3dc) {
+        this.axisX = Vector3d(x)
+        this.axisY = Vector3d(y)
+        this.axisZ = Vector3d(z)
+    }
+
     fun intersection(
         rayOrigin: Vector3dc,
         rayDirection: Vector3dc

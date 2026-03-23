@@ -83,7 +83,7 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     override fun getStatus(): Message? {
         val axis = getEditingAxis()
         if (game.editor.isSelected(target.uuid) && axis != null) {
-            val effectiveDelta = deltaOf(target.position, previousPosition!!)
+            val effectiveDelta = deltaOf(target.scale, previousScale!!)
             val delta = getVectorComponent(axis, effectiveDelta)
             val sign = delta < 0
             val signStr = if (sign) "-" else "+"

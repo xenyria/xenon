@@ -11,4 +11,4 @@ data class Message(val components: List<MessageComponent>) {
     }
 }
 
-data class MessageComponent(val text: String, val color: Color)
+data class MessageComponent(val text: String, val color: Color, val isTranslated: Boolean = false)

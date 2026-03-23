@@ -1,0 +1,3 @@
+([a-zA-Z0-9-]+\.)?xenyria\.(net|com|dev|build)
+\blocalhost\b
+\b127\.0\.0\.1\b

@@ -2,27 +2,19 @@ package net.xenyria.xenon
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonInfo
-import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.core.makeCenteredBox
 import net.xenyria.xenon.forklift.Forklift
-import net.xenyria.xenon.forklift.editor.EditorMode
-import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.forklift.render.XenonRenderPipelines
 import net.xenyria.xenon.forklift.render.overlay.ForkliftOverlayRenderer
-import net.xenyria.xenon.forklift.render.primitive.BoxPrimitive
 import net.xenyria.xenon.input.keyboard.KeyboardManager
 import net.xenyria.xenon.input.mouse.fromLWJGL
 import net.xenyria.xenon.mixin.KeyboardHandlerInvoker
+import net.xenyria.xenon.network.XenonPacketListener
+import net.xenyria.xenon.protocol.IXenonPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
 import org.joml.Vector2d
-import org.joml.Vector3d
-import org.joml.Vector3dc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.awt.Color
-import java.util.*
-
-const val MOD_ID = "xenon"
 
 class Xenon(val version: String) {
 
@@ -53,53 +45,16 @@ class Xenon(val version: String) {
         XenonRenderPipelines.initialize()
         ForkliftRenderer.initialize()
         ForkliftOverlayRenderer.initialize(this)
-
-        _session = Session(client)
-
-        var primRotation = Vector3d()
-        val primitive = BoxPrimitive(
-            makeCenteredBox(Vector3d(2.0, 4.0, 8.0), 1.0, 1.0),
-            Color(Color.PINK.red, Color.PINK.green, Color.PINK.blue, 128),
-            primRotation
-        )
-
-        val target = object : IEditorTarget {
-            override val uuid: UUID = UUID.randomUUID()
-            override var position: Vector3d
-                get() = Vector3d(primitive.box.origin)
-                set(value) {
-                    primitive.box = primitive.box.moveTo(value.x, value.y, value.z)
-                }
-            override var scale: Vector3d
-                get() = Vector3d(primitive.box.dimensions)
-                set(value) {
-                    primitive.box = primitive.box.resizeTo(
-                        Vector3d(
-                            maxOf(value.x, 0.0),
-                            maxOf(value.y, 0.0),
-                            maxOf(value.z, 0.0)
-                        )
-                    )
-                }
-            override var rotation: Vector3d
-                get() = primRotation
-                set(value) {
-                    primRotation.set(value)
-                }
-            override val supportedModes: Set<EditorMode> get() = EditorMode.entries.toSet()
-            override val supportedRotationAxes: Set<Axis> get() = Axis.entries.toSet()
-
-            override fun synchronize(position: Vector3dc, rotation: Vector3dc, scale: Vector3dc) {
-            }
-        }
-
-        forklift.editor.targetManager.updateTargets(listOf(target))
-        ForkliftRenderer.updateAdditionalPrimitives(listOf(primitive))
         logger.info("Xenon (v${version}) has been initialized.")
     }
 
     fun onTick() {
         getForkliftOrNull()?.onTick()
+        val packet = _pendingPacket
+        if (packet != null) {
+            client.sendPacket(packet)
+            _pendingPacket = null
+        }
     }
 
     fun reset() {
@@ -143,6 +98,19 @@ class Xenon(val version: String) {
         return false
     }
 
+    fun getSessionOrNull(): Session? {
+        return _session
+    }
+
+    fun startSession(editModeAvailable: Boolean) {
+        _session = Session(client, editModeAvailable)
+    }
+
+    private var _pendingPacket: IXenonPacket? = null
+    fun debouncePacket(packet: ServerboundUpdateGizmoPacket) {
+        _pendingPacket = packet
+    }
+
     companion object {
         private var _xenon: Xenon? = null
         val instance: Xenon get() = requireNotNull(_xenon) { "Xenon is not initialized" }
@@ -152,6 +120,7 @@ class Xenon(val version: String) {
         }
 
         fun create(version: String) {
+            XenonPacketListener.initialize()
             Keybinds.register()
             _xenon = Xenon(version)
         }

@@ -11,9 +11,12 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        // Used by demo server plugin
+        maven("https://repo.papermc.io/repository/maven-public/")
     }
 }
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+include("demo-server")

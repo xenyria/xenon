@@ -20,6 +20,6 @@ interface IEditorTarget {
 
     val supportedRotationAxes: Set<Axis>
 
-    fun synchronize(position: Vector3dc, rotation: Vector3dc, scale: Vector3dc)
+    fun synchronize(position: Vector3dc?, rotation: Vector3dc?, scale: Vector3dc?)
 
 }

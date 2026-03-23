@@ -203,8 +203,7 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
                 translateAxis(editingAxis)
             )
             val camera = game.getCamera()
-            val intersection = obb.intersection(camera.position, camera.direction)
-                ?: return GizmoInteractionResult.NONE
+            obb.intersection(camera.position, camera.direction) ?: return GizmoInteractionResult.NONE
 
             if (_quaternion == null) {
                 val quaternion = Quaternionf()

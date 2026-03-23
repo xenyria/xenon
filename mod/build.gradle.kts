@@ -19,6 +19,7 @@ val minecraft_version: String by project
 val loader_version: String by project
 val fabric_kotlin_version: String by project
 val fabric_api_version: String by project
+val yacl_version: String by project
 
 base {
     archivesName.set(project.property("archives_base_name") as String)
@@ -42,6 +43,9 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
     maven { url = uri("https://jitpack.io") }
+    maven("https://maven.isxander.dev/releases") {
+        name = "Xander Maven"
+    }
 }
 
 dependencies {
@@ -52,6 +56,7 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
+    modImplementation("dev.isxander:yet-another-config-lib:${yacl_version}")
 
     implementation(project(":core"))
     shadow(project(":core"))

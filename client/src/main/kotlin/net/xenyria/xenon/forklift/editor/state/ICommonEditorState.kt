@@ -7,6 +7,7 @@ import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.gizmo.AXIS_TIP_SIZE
 import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
 import net.xenyria.xenon.forklift.render.gizmo.DefaultGizmoRenderer
 import org.joml.*
@@ -76,10 +77,36 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
 
     @Synchronized
     override fun querySelectedAxis(): GizmoAxisIntersection? {
-        val intersectables = ArrayList<IntersectableAxis>()
+        val intersectables = ArrayList<Pair<Axis, List<OBB>>>()
         for (axis in Axis.entries) {
             val (from, to) = getAxisLine(axis)
-            intersectables.add(IntersectableAxis(axis, from, to))
+            val center = (Vector3d(from).add(to)).div(2.0)
+            val tip = Vector3d(to)
+
+            val thin = .05
+            val lineBox = OBB(
+                center,
+                if (axis == Axis.X) 1.0 else thin,
+                if (axis == Axis.Y) 1.0 else thin,
+                if (axis == Axis.Z) 1.0 else thin,
+            )
+            val tipBox = OBB(tip, AXIS_TIP_SIZE, AXIS_TIP_SIZE, AXIS_TIP_SIZE)
+
+            val matrix = Matrix4d()
+            if (shouldRotateGizmo()) GizmoRotationHelper.applyRotation(matrix, target.rotation)
+
+            lineBox.setOrientation(
+                matrix.transformPosition(Vector3d(1.0, 0.0, 0.0)),
+                matrix.transformPosition(Vector3d(0.0, 1.0, 0.0)),
+                matrix.transformPosition(Vector3d(0.0, 0.0, 1.0)),
+            )
+            tipBox.setOrientation(
+                matrix.transformPosition(Vector3d(1.0, 0.0, 0.0)),
+                matrix.transformPosition(Vector3d(0.0, 1.0, 0.0)),
+                matrix.transformPosition(Vector3d(0.0, 0.0, 1.0)),
+            )
+
+            intersectables.add(axis to listOf(lineBox, tipBox))
         }
 
         /**
@@ -89,11 +116,21 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
          * It's dumb, and I'm aware of that. It's fast & accurate enough to not cause problems at the moment.
          */
         val camera = game.getCamera()
-        val result = RayCast.findNearestIntersection(intersectables, camera.position, camera.direction, AXIS_INTERACTION_SIZE)
-            ?: return null
+        val results = ArrayList<Pair<Axis, Double>>()
+        for ((axis, boxes) in intersectables) {
+            val axisResults = ArrayList<Double>()
+            for (box in boxes) {
+                val result = box.intersection(camera.position, camera.direction) ?: continue
+                val distance = result.distance(camera.position)
+                axisResults.add(distance)
+            }
+            if (axisResults.isEmpty()) continue
+            results.add(axis to axisResults.min())
+        }
+        if (results.isEmpty()) return null
 
-        val lowestDistance = result.data.boundingBoxes.minOf { it.center.distance(camera.position) }
-        return GizmoAxisIntersection(lowestDistance, result.data.axis)
+        val (axis, distance) = results.minBy { it.second }
+        return GizmoAxisIntersection(distance, axis)
     }
 
     @Synchronized
@@ -101,7 +138,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
         val position = Vector3d(target.position)
         if (!shouldRotateGizmo()) {
             val direction = axis.positive
-            return Pair(position, Vector3d(position).add(direction.mul(AXIS_LINE_LENGTH)))
+            return Pair(position, Vector3d(position).add(direction.mul(AXIS_LINE_LENGTH + (AXIS_TIP_SIZE / 2.0))))
         } else {
             val rotation = target.rotation
             val matrix4f = Matrix4f()
@@ -112,7 +149,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             matrix4f.getTranslation(output)
 
             val directionVector = Vector3d(output.x.toDouble(), output.y.toDouble(), output.z.toDouble()).normalize()
-            return Pair(position, Vector3d(position).add(directionVector.mul(AXIS_LINE_LENGTH)))
+            return Pair(position, Vector3d(position).add(directionVector.mul(AXIS_LINE_LENGTH + (AXIS_TIP_SIZE / 2.0))))
         }
     }
 

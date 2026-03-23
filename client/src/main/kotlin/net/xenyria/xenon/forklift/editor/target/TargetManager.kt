@@ -1,18 +1,24 @@
 package net.xenyria.xenon.forklift.editor.target
 
+import net.xenyria.xenon.core.directionOf
 import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.IGameClient
-import net.xenyria.xenon.packet.serverbound.gizmo.ServerboundReleaseGizmoPacket
-import net.xenyria.xenon.packet.serverbound.state.ServerboundUpdateSelectionPacket
+import net.xenyria.xenon.forklift.editor.RenderableGizmo
+import net.xenyria.xenon.forklift.gizmo.GizmoData
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundReleaseGizmoPacket
+import net.xenyria.xenon.protocol.serverbound.state.ServerboundUpdateSelectionPacket
 import java.util.*
 
 class TargetManager(val client: IGameClient) {
 
-    // TargetIDs to Player IDs
+    // Target IDs to Player IDs (this is tracked to prevent multiple players from editing the same entity)
     private val _activeEditors = HashMap<UUID, UUID>()
     private val _availableTargets = ArrayList<TrackedTarget>()
+
+    // Used for selection logic (which target the player is currently looking at)
     private var _selectedGizmoId: UUID? = null
     private var _lastSentGizmoId: UUID? = null
+
     private var _selectedTarget: TrackedTarget? = null
     private var _currentMode: EditorMode = EditorMode.TRANSLATE
 
@@ -59,19 +65,66 @@ class TargetManager(val client: IGameClient) {
             _lastSentGizmoId = _selectedGizmoId
             client.sendPacket(ServerboundUpdateSelectionPacket(newId))
         }
+        renderGizmos()
+    }
+
+    private fun isInFieldOfView(target: IEditorTarget): Boolean {
+        return target == _selectedTarget || targetDot(target) >= 0.8
+    }
+
+    private fun targetDot(target: IEditorTarget): Double {
+        val targetPosition = target.position
+        val cameraPos = client.getCamera().position
+        val cameraDir = client.getCamera().direction
+
+        val cameraToGizmoDirection = directionOf(cameraPos, targetPosition)
+        return cameraDir.dot(cameraToGizmoDirection)
+    }
+
+    @Synchronized
+    fun renderGizmos() {
+        val targets = getSortedTargets()
+
+        val activeId = getActiveTarget()?.target?.uuid
+
+        val renderList = ArrayList<RenderableGizmo>()
+        var index = 0
+        for (entry in targets) {
+            if (!isInFieldOfView(entry.target)) continue
+            val editorPlayer = getActiveEditor(entry.target.uuid)
+
+            if (editorPlayer != null && editorPlayer != client.getPlayerId()) continue
+
+            renderList.add(RenderableGizmo(entry, activeId != null && entry.target.uuid == activeId, index++))
+        }
+        client.renderGizmos(renderList)
     }
 
     @Synchronized
     fun reset() {
         _availableTargets.clear()
-        _selectedTarget = null
+        releaseTarget()
         _selectedGizmoId = null
     }
 
+    @Synchronized
     fun getActiveTarget(): TrackedTarget? {
         return _selectedTarget
     }
 
+    @Synchronized
+    fun getSortedTargets(): List<TrackedTarget> {
+        val targets = getAvailableTargets().toMutableList()
+        targets.sortByDescending { targetDot(it.target) }
+        val selected = _selectedTarget
+        if (selected != null) {
+            targets.remove(selected)
+            targets.add(0, selected)
+        }
+        return targets
+    }
+    
+    @Synchronized
     fun getAvailableTargets(): List<TrackedTarget> {
         val list = _availableTargets.toMutableList()
         list.removeIf { !it.target.supportedModes.contains(_currentMode) }
@@ -82,16 +135,19 @@ class TargetManager(val client: IGameClient) {
         _selectedTarget = candidate
     }
 
+    @Synchronized
     fun releaseTarget() {
         _selectedTarget ?: return
         _selectedTarget = null
         client.sendPacket(ServerboundReleaseGizmoPacket())
     }
 
+    @Synchronized
     fun getActiveEditor(targetId: UUID): UUID? {
         return _activeEditors[targetId]
     }
 
+    @Synchronized
     fun setActiveEditor(targetId: UUID, user: UUID?) {
         if (user != null) {
             _activeEditors[targetId] = user
@@ -100,12 +156,69 @@ class TargetManager(val client: IGameClient) {
         }
     }
 
+    @Synchronized
     fun canEditTarget(targetId: UUID): Boolean {
         return _activeEditors[targetId] == null
     }
 
+    @Synchronized
     fun getActiveMode(): EditorMode {
         return _currentMode
+    }
+
+    @Synchronized
+    fun updateGizmos(
+        added: List<GizmoData>,
+        removed: List<UUID>,
+        updated: List<GizmoData>
+    ) {
+        val iterator = _availableTargets.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (entry.target.uuid in removed) {
+                iterator.remove()
+                _activeEditors.remove(entry.target.uuid)
+                continue
+            }
+        }
+
+        _availableTargets.removeIf { it.target.uuid in removed }
+        for (newGizmo in added) {
+            _availableTargets.add(TrackedTarget(client, fromData(client, newGizmo), _currentMode))
+            val editor = newGizmo.editorId
+            if (editor != null) setActiveEditor(newGizmo.gizmoId, editor)
+        }
+
+        for (existingGizmo in updated) {
+            val foundTarget = _availableTargets.find { it.target.uuid == existingGizmo.gizmoId } ?: continue
+
+            val selected = _selectedTarget
+            if (selected != null && selected.target.uuid == existingGizmo.gizmoId && client.isDragging()) {
+                val position = if (_currentMode == EditorMode.TRANSLATE) null else existingGizmo.position
+                val rotation = if (_currentMode == EditorMode.ROTATE) null else existingGizmo.rotation
+                val scale = if (_currentMode == EditorMode.SCALE) null else existingGizmo.scale
+                foundTarget.target.synchronize(position, rotation, scale)
+            } else {
+                foundTarget.target.synchronize(existingGizmo.position, existingGizmo.rotation, existingGizmo.scale)
+            }
+            _activeEditors.remove(existingGizmo.gizmoId)
+            val editor = existingGizmo.editorId
+            if (editor != null) _activeEditors[existingGizmo.gizmoId] = editor
+        }
+    }
+
+    companion object {
+        private fun fromData(game: IGameClient, target: GizmoData): IEditorTarget {
+            return RemoteEditorTarget(
+                game,
+                target.gizmoId,
+                target.position,
+                target.rotation,
+                target.scale,
+                target.allowedModes.map { EditorMode.from(it) }.toSet(),
+                target.rotationAxes
+            )
+        }
     }
 
 }

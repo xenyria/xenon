@@ -1,0 +1,28 @@
+package net.xenyria.xenon.protocol.serverbound.state
+
+import net.xenyria.xenon.protocol.IXenonPacket
+import net.xenyria.xenon.protocol.XenonPacketRegistry.SERVERBOUND_REQUEST_MODE_SWITCH
+import java.io.DataInputStream
+import java.io.DataOutputStream
+
+/**
+ * Sent by the client to enter/leave edit mode.
+ */
+class ServerboundRequestModeSwitchPacket() : IXenonPacket(SERVERBOUND_REQUEST_MODE_SWITCH) {
+
+    constructor(desiredState: Boolean) : this() {
+        this.desiredState = desiredState
+    }
+
+    var desiredState: Boolean = false
+        private set
+
+    override fun deserialize(input: DataInputStream) {
+        desiredState = input.readBoolean()
+    }
+
+    override fun serialize(output: DataOutputStream) {
+        output.writeBoolean(desiredState)
+    }
+
+}

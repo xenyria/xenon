@@ -2,10 +2,12 @@ package net.xenyria.xenon.forklift.editor
 
 import net.xenyria.xenon.core.Axis
 import net.xenyria.xenon.forklift.editor.state.impl.ROTATION_GIZMO_RADIUS
+import org.joml.Matrix4d
 import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.joml.Vector3f
+import java.lang.Math
 
 object GizmoRotationHelper {
     fun translateGizmoPosition(origin: Vector3dc, axis: Axis, rotation: Vector3dc): Vector3d {
@@ -22,6 +24,12 @@ object GizmoRotationHelper {
         matrix.getTranslation(output)
         end.add(output.x.toDouble(), output.y.toDouble(), output.z.toDouble())
         return end
+    }
+
+    fun applyRotation(matrix: Matrix4d, rotation: Vector3dc) {
+        matrix.rotate(Math.toRadians(rotation.y()), 0.0, 1.0, 0.0)
+        matrix.rotate(Math.toRadians(rotation.x()), 1.0, 0.0, 0.0)
+        matrix.rotate(Math.toRadians(rotation.z()), 0.0, 0.0, 1.0)
     }
 
     fun applyRotation(matrix: Matrix4f, rotation: Vector3dc) {
