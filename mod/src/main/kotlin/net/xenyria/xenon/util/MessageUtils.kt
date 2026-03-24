@@ -1,7 +1,29 @@
 package net.xenyria.xenon.util
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.mojang.serialization.JsonOps
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ComponentSerialization
 import net.xenyria.xenon.message.Message
+import java.awt.Color
+
+private val gson = Gson()
+
+private val errorComponent = Component.literal("<Error>").apply {
+    style = style.withColor(Color.RED.rgb)
+}
+
+fun parseComponentFromJSON(jsonString: String): Component {
+    return runCatching {
+        val deserialized = ComponentSerialization.CODEC.decode(
+            JsonOps.INSTANCE,
+            gson.fromJson(jsonString, JsonElement::class.java)
+        )
+        if (deserialized.isError) return errorComponent
+        deserialized.getOrThrow().first
+    }.getOrDefault(errorComponent)
+}
 
 fun Message.toComponent(): Component {
     val components = components.map {

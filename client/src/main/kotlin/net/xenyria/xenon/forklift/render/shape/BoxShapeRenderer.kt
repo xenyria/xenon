@@ -28,7 +28,8 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
     private fun renderOutline(renderer: IGameRenderer, shape: BoxShape) {
         val min = shape.position
         val max = Vector3d(shape.position).add(Vector3d(shape.properties.dimensions))
-// Draw lines
+
+        // Draw lines
         val lines = ArrayList<LinePrimitive>()
         lines.addAll(getSurface(min, max, shape.properties.outlineColor, min.y(), LINE_WIDTH))
         lines.addAll(getSurface(min, max, shape.properties.outlineColor, max.y, LINE_WIDTH))
@@ -36,8 +37,8 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
         renderer.drawPrimitives(lines, shape.properties.visibleThroughWalls)
     }
 
-    override fun drawShape(renderer: IGameRenderer, shape: BoxShape) {
-        if (!isVisible(renderer, shape)) return
+    override fun drawShape(renderer: IGameRenderer, shape: BoxShape): Boolean {
+        if (!isVisible(renderer, shape)) return false
 
         if (shape.properties.onlyRenderOutline) {
             renderOutline(renderer, shape)
@@ -47,6 +48,7 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
                 listOf(BoxPrimitive(shape.box, shape.properties.boxColor)), shape.properties.visibleThroughWalls
             )
         }
+        return true
     }
 
     private fun getCorners(

@@ -39,4 +39,9 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
         return _state.querySelectedAxis()
     }
 
+    fun getErrorMessage(): String? {
+        if (!target.supportedModes.contains(_state.type)) return "forklift_unsupported_mode"
+        return null
+    }
+
 }

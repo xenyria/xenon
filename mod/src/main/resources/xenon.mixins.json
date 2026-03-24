@@ -13,7 +13,8 @@
         "DisconnectMixin",
         "ChatMixin",
         "HudMixin",
-        "CameraModeMixin"
+        "CameraModeMixin",
+        "FrustumMixin"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -28,7 +28,7 @@ fun DataOutputStream.writeRGB(color: Color) {
 }
 
 fun DataInputStream.readRGBA(): Color {
-    return Color(readInt())
+    return Color(readInt(), true)
 }
 
 fun DataOutputStream.writeRGBA(color: Color) {

@@ -13,6 +13,7 @@
     "xenon_forklift": "Enable Level Editor",
     "xenon_debug_shapes": "Debug Shapes",
     "xenon_debug_overlays": "Debug Overlays",
+    "forklift_unsupported_mode": "Current mode not supported",
     "forklift_edit_mode_timeout": "Failed to enable edit mode: Timed out.",
     "forklift_target_already_being_edited": "Another player is currently editing this entity.",
     "forklift_entered_edit_mode": "Edit mode enabled.",

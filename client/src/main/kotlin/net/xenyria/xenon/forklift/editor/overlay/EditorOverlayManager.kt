@@ -18,7 +18,7 @@ class EditorOverlayManager(val client: IGameClient) {
         val newOverlayMap = newOverlays.associateBy { it.id }
         val newList = ArrayList<TextOverlayData>(_overlays.size)
 
-        for (overlay in _overlays) {
+        for (overlay in newOverlays) {
             val updatedOverlay = newOverlayMap[overlay.id]
             if (updatedOverlay != null) {
                 newList.add(updatedOverlay)

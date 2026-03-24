@@ -1,10 +1,7 @@
 package net.xenyria.xenon.demo
 
 import net.xenyria.xenon.demo.activity.XenonActivityManager
-import net.xenyria.xenon.demo.command.DiscordActivityCommand
-import net.xenyria.xenon.demo.command.GizmoCommand
-import net.xenyria.xenon.demo.command.LockCameraCommand
-import net.xenyria.xenon.demo.command.SetCameraCommand
+import net.xenyria.xenon.demo.command.*
 import net.xenyria.xenon.demo.communication.XenonCommunication
 import net.xenyria.xenon.demo.listener.PlayerListener
 import net.xenyria.xenon.demo.player.XenonPlayerManager
@@ -23,6 +20,7 @@ class XenonDemoPlugin : JavaPlugin() {
         registerCommand("discord_activity", DiscordActivityCommand())
         registerCommand("set_camera", SetCameraCommand())
         registerCommand("lock_camera", LockCameraCommand())
+        registerCommand("shapes", ShapesCommand())
         Bukkit.getPluginManager().registerEvents(PlayerListener, this)
     }
 

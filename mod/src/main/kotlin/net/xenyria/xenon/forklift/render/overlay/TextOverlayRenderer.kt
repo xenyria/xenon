@@ -1,17 +1,14 @@
 package net.xenyria.xenon.forklift.render.overlay
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.mojang.serialization.JsonOps
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ActiveTextCollector
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.TextAlignment
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.ComponentSerialization
 import net.xenyria.xenon.forklift.overlay.OverlayAnchor
 import net.xenyria.xenon.forklift.overlay.TextOverlayData
 import net.xenyria.xenon.game
+import net.xenyria.xenon.util.parseComponentFromJSON
 import org.joml.Matrix3x2f
 
 object TextOverlayRenderer {
@@ -69,20 +66,12 @@ object TextOverlayRenderer {
         }
     }
 
-    private val gson = Gson()
-
-    fun toComponent(overlay: TextOverlayData): Component {
-        val deserialized = ComponentSerialization.CODEC
-            .decode(JsonOps.INSTANCE, gson.fromJson(overlay.components, JsonElement::class.java))
-        if (deserialized.isError) return Component.literal("Error")
-        return deserialized.getOrThrow().first
-    }
 
     fun render(graphics: GuiGraphics, overlay: TextOverlayData) {
         render(
             graphics,
             overlay.opacity,
-            toComponent(overlay),
+            parseComponentFromJSON(overlay.components),
             overlay.anchor,
             overlay.offsetX,
             overlay.offsetY

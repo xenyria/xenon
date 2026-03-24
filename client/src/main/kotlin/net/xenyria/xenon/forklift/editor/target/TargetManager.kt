@@ -109,8 +109,16 @@ class TargetManager(val client: IGameClient) {
             val editorPlayer = getActiveEditor(entry.target.uuid)
 
             if (editorPlayer != null && editorPlayer != client.getPlayerId()) continue
+            val error = entry.getErrorMessage()
 
-            renderList.add(RenderableGizmo(entry, activeId != null && entry.target.uuid == activeId, index++))
+            renderList.add(
+                RenderableGizmo(
+                    entry,
+                    activeId != null && entry.target.uuid == activeId,
+                    index++,
+                    error
+                )
+            )
         }
         client.renderGizmos(renderList)
     }

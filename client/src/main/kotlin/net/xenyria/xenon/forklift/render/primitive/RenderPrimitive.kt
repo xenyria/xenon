@@ -2,6 +2,7 @@ package net.xenyria.xenon.forklift.render.primitive
 
 import net.xenyria.xenon.forklift.render.colorToFloat
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
+import org.joml.Vector3d
 import org.joml.Vector3dc
 import java.awt.Color
 
@@ -10,6 +11,7 @@ data class Vertex(
     val red: Float, val green: Float, val blue: Float, val alpha: Float
 ) {
 
+    val position: Vector3d get() = Vector3d(x, y, z)
     var normal: Vector3dc? = null
     var lineWidth: Float? = null
 

@@ -18,7 +18,7 @@ class ShapeManager(val client: IGameClient) {
         val newShapeMap = newShapes.associateBy { it.id }
         val newList = ArrayList<IEditorShape<*>>(_shapes.size)
 
-        for (shape in _shapes) {
+        for (shape in newShapes) {
             val updatedShape = newShapeMap[shape.id]
             if (updatedShape != null) {
                 newList.add(updatedShape)

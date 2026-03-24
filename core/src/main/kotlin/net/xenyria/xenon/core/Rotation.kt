@@ -6,7 +6,7 @@ import kotlin.math.*
 
 private const val PI_2 = Math.PI * 2 // Pi * 2
 
-class Rotation(val yaw: Float, val pitch: Float) {
+data class Rotation(val yaw: Float, val pitch: Float) {
     companion object {
         val ZERO = Rotation(0.0F, 0.0F)
     }

@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonInfo
 import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.Settings
+import net.xenyria.xenon.config.XenonClientConfig
+import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.Forklift
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
@@ -24,6 +26,7 @@ val LOGGER: Logger = LoggerFactory.getLogger("Xenon")
 class Xenon(val version: String) {
 
     val client = GameClient(this)
+    val config: XenonConfig get() = XenonClientConfig.config
     val forklift: Forklift get() = requireNotNull(getForkliftOrNull()) { "Not connected to any supported server" }
 
     fun getForkliftOrNull(): Forklift? {
@@ -59,6 +62,23 @@ class Xenon(val version: String) {
             client.sendPacket(packet)
             _pendingPacket = null
         }
+
+        /*
+        client.renderShapes(
+            listOf(
+                SphereShape(
+                    "sphere",
+                    Vector3d(32.0),
+                    SphereShapeProperties(
+                        1.0F, color = Color.WHITE, visibleThroughWalls = false,
+                        isOutline = true
+                    ),
+                    textLines = listOf(
+                        "{\"text\": \"Sphere\", \"color\":\"blue\"}"
+                    )
+                ),
+            )
+        )*/
     }
 
     fun endSession() {
@@ -69,10 +89,10 @@ class Xenon(val version: String) {
 
     fun onMouseButton(mouseButtonInfo: MouseButtonInfo, action: Int): Boolean {
         if (game.screen != null) return false
+        val forklift = xenon.getForkliftOrNull() ?: return false
+
         val event = fromLWJGL(mouseButtonInfo.button, action, mouseButtonInfo.modifiers)
         if (event.isRightMouseButton && event.isReleased) forklift.editor.leaveDragMode()
-
-        val forklift = getForkliftOrNull() ?: return false
 
         if (forklift.editor.onMouseButton(event) && forklift.editor.isActive) {
             keyboard.releaseAllKeys()

@@ -12,15 +12,12 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 
 class PyramidShapeProperties(
-    baseCenter: Vector3dc = ZERO,
     apex: Vector3dc = ZERO,
     baseSize: Float = 1.0F,
     outlineColor: Color = Color.WHITE,
     visibleThroughWalls: Boolean = false
 ) : IEditorShapeProperties() {
 
-    var baseCenter: Vector3dc = baseCenter
-        private set
     var apex: Vector3dc = apex
         private set
     var baseSize: Float = baseSize
@@ -31,7 +28,6 @@ class PyramidShapeProperties(
         private set
 
     override fun writeToStream(stream: DataOutputStream) {
-        stream.writeVec3D(baseCenter)
         stream.writeVec3D(apex)
         stream.writeFloat(baseSize)
         stream.writeRGBA(outlineColor)
@@ -39,7 +35,6 @@ class PyramidShapeProperties(
     }
 
     override fun readFromStream(stream: DataInputStream) {
-        baseCenter = stream.readVec3D()
         apex = stream.readVec3D()
         baseSize = stream.readFloat()
         outlineColor = stream.readRGBA()
@@ -48,7 +43,6 @@ class PyramidShapeProperties(
 
     override fun toJSON(): JSONObject {
         val json = JSONObject()
-        json.putVector("baseCenter", baseCenter)
         json.putVector("apex", apex)
         json.put("baseSize", baseSize)
         json.putColor("outlineColor", outlineColor)
@@ -58,11 +52,23 @@ class PyramidShapeProperties(
 
 }
 
-class PyramidShape : IEditorShape<PyramidShapeProperties>(ShapeType.SPHERE, PyramidShapeProperties()) {
+class PyramidShape : IEditorShape<PyramidShapeProperties> {
 
-    override val textDisplayOrigin: Vector3dc get() = Vector3d(properties.apex).add(OFFSET)
+    constructor() : super(ShapeType.PYRAMID, PyramidShapeProperties())
+    constructor(
+        id: String,
+        position: Vector3dc,
+        properties: PyramidShapeProperties,
+        textLines: List<String> = emptyList(),
+        group: String = "",
+    ) : super(id, position, ShapeType.PYRAMID, properties, textLines, group)
+
+    override val textDisplayOrigin: Vector3dc
+        get() {
+            return Vector3d(properties.apex).add(OFFSET)
+        }
 
     companion object {
-        val OFFSET: Vector3dc = Vector3d(0.0, 0.25, 0.0)
+        val OFFSET: Vector3dc = Vector3d(0.0, 0.5, 0.0)
     }
 }

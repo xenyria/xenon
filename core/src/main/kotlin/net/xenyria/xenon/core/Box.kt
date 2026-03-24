@@ -3,6 +3,27 @@ package net.xenyria.xenon.core
 import org.joml.Vector3d
 import org.joml.Vector3dc
 
+fun makeBoxFromPoints(points: List<Vector3dc>): Box {
+    if (points.isEmpty()) return Box(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    if (points.size == 1) return Box(points[0], points[0])
+    var minX = points[0].x()
+    var minY = points[0].y()
+    var minZ = points[0].z()
+    var maxX = points[0].x()
+    var maxY = points[0].y()
+    var maxZ = points[0].z()
+
+    for (point in points) {
+        if (point.x() < minX) minX = point.x()
+        if (point.y() < minY) minY = point.y()
+        if (point.z() < minZ) minZ = point.z()
+        if (point.x() > maxX) maxX = point.x()
+        if (point.y() > maxY) maxY = point.y()
+        if (point.z() > maxZ) maxZ = point.z()
+    }
+    return Box(minX, minY, minZ, maxX, maxY, maxZ)
+}
+
 fun makeCenteredBox(position: Vector3dc, width: Double, height: Double): Box {
     val widthHalf = width / 2.0
     val heightHalf = height / 2.0

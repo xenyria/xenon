@@ -2,6 +2,8 @@ package net.xenyria.xenon.forklift.editor
 
 import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.XenonConfig
+import net.xenyria.xenon.core.Box
+import net.xenyria.xenon.core.makeCenteredBox
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.TransformationMode
@@ -35,7 +37,15 @@ import org.joml.Vector3dc
 import java.awt.Color
 import java.util.*
 
-data class RenderableGizmo(val target: TrackedTarget, val selected: Boolean, val index: Int)
+data class RenderableGizmo(
+    val target: TrackedTarget,
+    val selected: Boolean,
+    val index: Int,
+    val error: String? = null
+) {
+    val cullingBox: Box
+        get() = makeCenteredBox(target.target.position, 3.0, 3.0)
+}
 
 enum class EditorMode(val index: Int, val displayName: String, val color: Color) {
 
@@ -78,6 +88,8 @@ interface IGameClient {
     fun getMousePosition(): Vector2d
 
     fun sendPacket(packet: IXenonPacket)
+
+    fun isInView(box: Box): Boolean
 
     fun getScreenPosition(worldPosition: Vector3dc): Vector2d
 

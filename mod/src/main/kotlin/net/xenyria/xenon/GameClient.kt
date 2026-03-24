@@ -1,11 +1,14 @@
 package net.xenyria.xenon
 
 import net.minecraft.client.CameraType
+import net.minecraft.client.renderer.culling.Frustum
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.XenonClientConfig
 import net.xenyria.xenon.config.XenonConfig
+import net.xenyria.xenon.core.Box
 import net.xenyria.xenon.core.calculateDirection
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
@@ -15,6 +18,7 @@ import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
 import net.xenyria.xenon.forklift.overlay.TextOverlayData
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
+import net.xenyria.xenon.forklift.render.RenderableShape
 import net.xenyria.xenon.forklift.render.overlay.ForkliftOverlayRenderer
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.mixin.MouseInvoker
@@ -29,7 +33,7 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import java.util.*
 
-class GameClient(xenon: Xenon) : IGameClient {
+class GameClient(private val xenon: Xenon) : IGameClient {
 
     @Synchronized
     override fun getCamera(): GameCamera {
@@ -90,12 +94,17 @@ class GameClient(xenon: Xenon) : IGameClient {
 
     @Synchronized
     override fun renderShapes(shapes: List<IEditorShape<*>>) {
-        ForkliftRenderer.updateShapes(shapes)
+        ForkliftRenderer.updateShapes(shapes.map { RenderableShape(it) })
     }
 
     @Synchronized
     override fun renderOverlays(overlays: List<TextOverlayData>) {
         ForkliftOverlayRenderer.updateOverlays(overlays)
+    }
+
+    override fun isInView(box: Box): Boolean {
+        return _frustum?.isVisible(AABB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
+            ?: return false
     }
 
     @Synchronized
@@ -167,6 +176,11 @@ class GameClient(xenon: Xenon) : IGameClient {
     @Synchronized
     override fun getPlayerId(): UUID? {
         return game.player?.uuid
+    }
+
+    private var _frustum: Frustum? = null
+    fun setFrustum(frustum: Frustum) {
+        _frustum = frustum
     }
 
     override val forkliftConfig: ForkliftConfig = ForkliftConfig()

@@ -16,54 +16,24 @@ import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.world.phys.Vec3
 import net.xenyria.xenon.MOD_ID
 import net.xenyria.xenon.config.XenonClientConfig
-import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
-import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
-import net.xenyria.xenon.forklift.render.shape.ShapeRenderers
-import net.xenyria.xenon.shape.IEditorShape
+import net.xenyria.xenon.message.Message
+import net.xenyria.xenon.message.MessageComponent
+import net.xenyria.xenon.util.toComponent
 import net.xenyria.xenon.xenon
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
+import java.awt.Color
 import java.util.*
 
 
 val COLOR_MODULATOR: Vector4f = Vector4f(1f, 1f, 1f, 1f)
 val MODEL_OFFSET: Vector3f = Vector3f()
 val TEXTURE_MATRIX: Matrix4f = Matrix4f()
-
-fun compileShapes(
-    config: XenonConfig,
-    primitives: List<IRenderPrimitive>,
-    shapes: List<IEditorShape<*>>,
-    gizmos: List<RenderableGizmo>,
-): List<RenderPass> {
-    val renderAdapter = MinecraftRenderAdapter()
-    renderAdapter.drawPrimitives(primitives, false)
-
-    val forklift = xenon.getForkliftOrNull()
-    if (forklift != null && forklift.editor.isActive && config.developer.enableGizmos)
-        for (gizmo in gizmos)
-            gizmo.target.render(renderAdapter, gizmo.selected, gizmo.index)
-
-    if (config.developer.enableGizmos) {
-        for (shape in shapes) {
-            val renderer = ShapeRenderers.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
-            renderer.drawShape(renderAdapter, shape)
-        }
-    }
-    renderAdapter.flush()
-    return renderAdapter.getRenderPasses()
-}
-
-data class RenderPass(val pipelineType: RenderPipelineType, val primitives: List<IRenderPrimitive>) {
-    fun getPipeline(): RenderPipeline {
-        return XenonRenderPipelines.getPipeline(pipelineType)
-    }
-}
 
 /**
  * Huge parts of this class are based around rendering examples from Fabric's mod docs:
@@ -78,7 +48,7 @@ object ForkliftRenderer {
         _renderState.gizmos = gizmos.toList()
     }
 
-    fun updateShapes(shapes: List<IEditorShape<*>>) {
+    fun updateShapes(shapes: List<RenderableShape>) {
         _renderState.shapes = shapes.toList()
     }
 
@@ -95,48 +65,44 @@ object ForkliftRenderer {
     }
 
     fun render(context: WorldRenderContext) {
-        val camera: Vec3 = context.worldState().cameraRenderState.pos
-        /*val orientation = context.worldState().cameraRenderState.orientation
-        val dest = Vector3f()
-        orientation.getEulerAnglesXYZ(dest)
-
-        val random = Random(System.nanoTime())
-        val comp = Component.literal("${Math.toDegrees(dest.y)}")
-        val width = Minecraft.getInstance().font.width(comp)
-
-        // public static record TextSubmit(Matrix4f pose, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color,
-        //  int backgroundColor, int outlineColor) {
-        context.matrices().pushPose()
-        //
-        context.matrices().translate(-camera.x, -camera.y, -camera.z)
-
-        val quat = Quaternionf()
-        quat.rotateLocalX(toRadians(-context.gameRenderer().mainCamera.xRot()))
-        quat.rotateLocalY(toRadians(180 - context.gameRenderer().mainCamera.yRot()))
-        context.matrices().last().rotate(quat)
-
-
-        context.matrices().scale(1.0F / 16.0F, -1.0F / 16.0F, 1.0F / 16.0F)
-        context.matrices().translate(-(width / 2.0), 0.0, 0.0)
-
-        context.commandQueue().submitText(
-            context.matrices(),
-            1.0F, 1.0F, comp.visualOrderText,
-            true, Font.DisplayMode.SEE_THROUGH,
-            Color.RED.rgb,
-            Color.RED.rgb,
-            0,
-            0
-        )
-        context.matrices().popPose()*/
-
-        for (pass in compileShapes(
+        val passes = ForkliftShapeExtractor.extract(
             XenonClientConfig.config,
             _renderState.additionalPrimitives,
             _renderState.shapes,
-            _renderState.gizmos,
-        )) {
-            drawPrimitives(pass, context)
+            _renderState.gizmos
+        )
+        // First step: Draw all primitives
+        for (pass in passes) drawPrimitives(pass, context)
+
+        // Lastly, also draw all shape holograms/in-world debug texts
+        drawGizmoErrors(context)
+        for (pass in passes) drawShapeText(pass, context)
+    }
+
+    private fun drawShapeText(pass: RenderPass, context: WorldRenderContext) {
+        if (!xenon.config.developer.enableShapes) return
+        val renderer = WorldTextRenderer(context)
+        for (hologram in pass.holograms) {
+            val scale = 1.0F / 48.0F // Scaled in a way to make one text pixel as large as 1/48 of a block
+            renderer.renderCentered(hologram.position, hologram.lines, true, scale)
+        }
+    }
+
+    private fun drawGizmoErrors(context: WorldRenderContext) {
+        val forklift = xenon.getForkliftOrNull() ?: return
+        val config = xenon.config
+        if (!forklift.editor.isActive || !config.developer.enableGizmos) return
+        val renderer = WorldTextRenderer(context)
+
+        for (gizmo in _renderState.gizmos) {
+            val error = gizmo.error ?: continue
+            renderer.renderCentered(
+                gizmo.target.target.position,
+                listOf(
+                    Message(MessageComponent(error, Color.RED, true)).toComponent()
+                ),
+                true
+            )
         }
     }
 

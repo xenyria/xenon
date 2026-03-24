@@ -34,4 +34,9 @@ object XenonShapes {
         }
     }
 
+    fun addAll(shapes: List<IEditorShape<*>>) {
+        _shapes.addAll(shapes)
+        emitUpdate()
+    }
+
 }
