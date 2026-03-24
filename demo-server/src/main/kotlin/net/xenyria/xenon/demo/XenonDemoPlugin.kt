@@ -3,6 +3,7 @@ package net.xenyria.xenon.demo
 import net.xenyria.xenon.demo.activity.XenonActivityManager
 import net.xenyria.xenon.demo.command.*
 import net.xenyria.xenon.demo.communication.XenonCommunication
+import net.xenyria.xenon.demo.feature.overlay.XenonOverlays
 import net.xenyria.xenon.demo.listener.PlayerListener
 import net.xenyria.xenon.demo.player.XenonPlayerManager
 import org.bukkit.Bukkit
@@ -14,6 +15,7 @@ class XenonDemoPlugin : JavaPlugin() {
         super.onEnable()
         _instance = this
         XenonPlayerManager.startUpdateLoop()
+        XenonOverlays.startUpdateLoop()
         XenonCommunication.initialize()
         XenonActivityManager.initialize()
         registerCommand("gizmo", GizmoCommand())
@@ -21,6 +23,7 @@ class XenonDemoPlugin : JavaPlugin() {
         registerCommand("set_camera", SetCameraCommand())
         registerCommand("lock_camera", LockCameraCommand())
         registerCommand("shapes", ShapesCommand())
+        registerCommand("toggle_overlay", OverlayCommand())
         Bukkit.getPluginManager().registerEvents(PlayerListener, this)
     }
 

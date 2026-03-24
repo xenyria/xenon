@@ -1,6 +1,8 @@
 package net.xenyria.xenon.forklift.editor.state
 
-import net.xenyria.xenon.core.*
+import net.xenyria.xenon.core.Axis
+import net.xenyria.xenon.core.OBB
+import net.xenyria.xenon.core.directionOf
 import net.xenyria.xenon.forklift.editor.GizmoManipulator
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
 import net.xenyria.xenon.forklift.editor.IGameClient
@@ -153,8 +155,8 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
     }
 
     @Synchronized
-    override fun render(renderer: IGameRenderer, selected: Boolean, index: Int) {
-        if (!selected) _editingSession = null
+    override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
+        if (!isSelected) _editingSession = null
 
         var selectedAxis: Axis? = getSelectedAxis()
         val editingAxis = getEditingAxis()
@@ -165,29 +167,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             target.position,
             if (shouldRotateGizmo()) target.rotation else Vector3d(),
             renderAxisType,
-            index != 0
+            isTransparent
         )
     }
-}
-
-class IntersectableAxis(val axis: Axis, start: Vector3dc, end: Vector3dc) : IIntersectable {
-
-    override val boundingBoxes: List<Box>
-
-    init {
-        val resolution = 10
-        var direction = deltaOf(start, end)
-        val length: Double = direction.length()
-        direction = direction.normalize()
-
-        val bbList = ArrayList<Box>()
-        for (i in 0..<resolution) {
-            val center = Vector3d(start).add(Vector3d(direction).mul(length * i / resolution))
-            val box = Box(center, center)
-                .grow(VISUAL_AXIS_SIZE_MODIFIER, VISUAL_AXIS_SIZE_MODIFIER, VISUAL_AXIS_SIZE_MODIFIER)
-            bbList.add(box)
-        }
-        this.boundingBoxes = bbList
-    }
-
 }

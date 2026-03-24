@@ -10,12 +10,13 @@ import org.joml.Quaternionf
 import org.joml.Vector3dc
 import java.awt.Color
 
+private const val DEFAULT_TEXT_SCALE = 1.0F / 48.0F
+
 class WorldTextRenderer(val context: WorldRenderContext) {
 
     private val camera: Vec3 = context.worldState().cameraRenderState.pos
-    private val textScale = 1.0F / 48.0F
 
-    fun renderCentered(position: Vector3dc, lines: List<Component>, seeThrough: Boolean, scale: Float = textScale) {
+    fun renderCentered(position: Vector3dc, lines: List<Component>, seeThrough: Boolean, scale: Float = DEFAULT_TEXT_SCALE) {
         val font = Minecraft.getInstance().font
 
         val lineSpacing = 2
@@ -35,7 +36,7 @@ class WorldTextRenderer(val context: WorldRenderContext) {
             quat.rotateLocalY(toRadians(180 - context.gameRenderer().mainCamera.yRot()))
             context.matrices().last().rotate(quat)
 
-            context.matrices().scale(textScale, -textScale, textScale)
+            context.matrices().scale(scale, -scale, scale)
             context.matrices().translate(-(width / 2.0), 0.0, 0.0)
             context.matrices().translate(0.0, currentHeight, 0.0)
 

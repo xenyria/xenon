@@ -39,8 +39,8 @@ import java.util.*
 
 data class RenderableGizmo(
     val target: TrackedTarget,
-    val selected: Boolean,
-    val index: Int,
+    val isSelected: Boolean,
+    val isTransparent: Boolean,
     val error: String? = null
 ) {
     val cullingBox: Box
@@ -188,6 +188,7 @@ class Editor(val client: IGameClient) {
     fun onMouseButton(event: MouseButtonEvent): Boolean {
         if (!isActive) return false
         for (candidate in targetManager.getSortedTargets()) {
+            if (!candidate.supportsCurrentMode()) continue
             val result = candidate.onInteract(event)
             if (result == GizmoInteractionResult.NONE) continue
 

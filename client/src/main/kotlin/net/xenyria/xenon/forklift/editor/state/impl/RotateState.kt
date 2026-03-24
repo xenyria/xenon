@@ -34,11 +34,11 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
         return target.supportedRotationAxes.contains(axis)
     }
 
-    override fun render(renderer: IGameRenderer, selected: Boolean, index: Int) {
+    override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
         val hoveringAxis = getSelectedAxis()
-        if (!selected) _rotator.resetSelectedAxis()
+        if (!isSelected) _rotator.resetSelectedAxis()
 
-        val alpha = if (selected || index == 0) 255 else 8
+        val alpha = if (isSelected && !isTransparent) 255 else 8
 
         val editingAxis = _rotator.editingAxis
         if (isAxisAvailable(Axis.Y) && (editingAxis == null || editingAxis === Axis.Y)) {

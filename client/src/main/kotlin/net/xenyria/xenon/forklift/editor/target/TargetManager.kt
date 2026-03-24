@@ -60,8 +60,17 @@ class TargetManager(val client: IGameClient) {
 
     @Synchronized
     private fun findSelectedGizmo(): TrackedTarget? {
+        return findSelectedGizmo(getSortedTargets())
+    }
+
+    @Synchronized
+    private fun findSelectedGizmo(targets: List<TrackedTarget>): TrackedTarget? {
+        val selectedTarget = _selectedTarget
+        if (selectedTarget != null) return selectedTarget // Prioritize the entity we're currently editing
+
         val results = ArrayList<Pair<Double, TrackedTarget>>()
-        for (gizmo in getSortedTargets()) {
+        for (gizmo in targets) {
+            if (!gizmo.supportsCurrentMode()) continue
             val state = gizmo.querySelectionState() ?: continue
             results.add(state.distance to gizmo)
         }
@@ -101,9 +110,11 @@ class TargetManager(val client: IGameClient) {
         val targets = getSortedTargets()
 
         val activeId = getActiveTarget()?.target?.uuid
+        val selectedGizmo = findSelectedGizmo()
 
         val renderList = ArrayList<RenderableGizmo>()
         var index = 0
+
         for (entry in targets) {
             if (!isInFieldOfView(entry.target)) continue
             val editorPlayer = getActiveEditor(entry.target.uuid)
@@ -111,14 +122,21 @@ class TargetManager(val client: IGameClient) {
             if (editorPlayer != null && editorPlayer != client.getPlayerId()) continue
             val error = entry.getErrorMessage()
 
+            // Render the nearest target fully opaque.
+            // If we're directly looking at an entity, render it fully opaque instead.
+            var isTransparent = index != 0
+            if (selectedGizmo != null)
+                isTransparent = selectedGizmo.target.uuid != entry.target.uuid
+
             renderList.add(
                 RenderableGizmo(
                     entry,
                     activeId != null && entry.target.uuid == activeId,
-                    index++,
+                    isTransparent,
                     error
                 )
             )
+            index++
         }
         client.renderGizmos(renderList)
     }
@@ -143,19 +161,24 @@ class TargetManager(val client: IGameClient) {
         if (selected != null) {
             targets.remove(selected)
             targets.add(0, selected)
+        } else {
+            val entityInLineOfSight = findSelectedGizmo(targets)
+            if (entityInLineOfSight != null) {
+                targets.remove(entityInLineOfSight)
+                targets.add(0, entityInLineOfSight)
+            }
         }
         targets.removeIf {
             val uuid = _activeEditors[it.target.uuid]
             return@removeIf uuid != null && uuid != client.getPlayerId()
         }
+
         return targets
     }
 
     @Synchronized
     fun getAvailableTargets(): List<TrackedTarget> {
-        val list = _availableTargets.toMutableList()
-        list.removeIf { !it.target.supportedModes.contains(_currentMode) }
-        return list
+        return _availableTargets.toList()
     }
 
     fun setActiveTarget(candidate: TrackedTarget) {

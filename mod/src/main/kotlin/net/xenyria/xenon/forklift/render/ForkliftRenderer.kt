@@ -101,7 +101,8 @@ object ForkliftRenderer {
                 listOf(
                     Message(MessageComponent(error, Color.RED, true)).toComponent()
                 ),
-                true
+                seeThrough = true,
+                scale = 1.0F / 64.0F,
             )
         }
     }

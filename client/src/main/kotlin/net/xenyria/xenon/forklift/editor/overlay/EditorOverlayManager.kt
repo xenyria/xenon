@@ -35,6 +35,7 @@ class EditorOverlayManager(val client: IGameClient) {
     @Synchronized
     fun removeOverlays(overlays: Set<String>) {
         _overlays.removeIf { it.id in overlays }
+        client.renderOverlays(_overlays)
     }
 
 

@@ -19,7 +19,7 @@ enum class GizmoInteractionResult {
 
 abstract class IEditorState(val game: IGameClient, val target: IEditorTarget) {
 
-    abstract fun render(renderer: IGameRenderer, selected: Boolean, index: Int)
+    abstract fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean)
 
     abstract fun querySelectedAxis(): GizmoAxisIntersection?
 

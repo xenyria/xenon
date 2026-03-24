@@ -54,7 +54,7 @@ object ForkliftShapeExtractor {
         if (forklift != null && forklift.editor.isActive && config.developer.enableGizmos)
             for (gizmo in gizmos) {
                 if (gizmo.error != null || !xenon.client.isInView(gizmo.cullingBox)) continue
-                gizmo.target.render(renderAdapter, gizmo.selected, gizmo.index)
+                gizmo.target.render(renderAdapter, gizmo.isSelected, gizmo.isTransparent)
             }
 
         if (config.developer.enableShapes) {

@@ -9,14 +9,13 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 
 data class TextOverlayData(
-    val id: String,
-    val opacity: Double = 1.0,
-    val components: String = "",
-    val anchor: OverlayAnchor = OverlayAnchor.TOP_LEFT,
-    val scale: Double = 1.0,
-    val offsetX: Int = 0,
-    val offsetY: Int = 0,
-    val centered: Boolean = false
+    var id: String,
+    var opacity: Double = 1.0,
+    var components: String = "",
+    var anchor: OverlayAnchor = OverlayAnchor.TOP_LEFT,
+    var scale: Double = 1.0,
+    var offsetX: Int = 0,
+    var offsetY: Int = 0
 ) : IHashable {
 
     fun writeToStream(stream: DataOutputStream) {
@@ -27,7 +26,6 @@ data class TextOverlayData(
         stream.writeFloat(scale.toFloat())
         stream.writeVarInt(offsetX)
         stream.writeVarInt(offsetY)
-        stream.writeBoolean(centered)
     }
 
     private var _cachedHash: String = ""
@@ -49,8 +47,7 @@ data class TextOverlayData(
                 OverlayAnchor.entries[stream.readByte().toInt()],
                 stream.readFloat().toDouble(),
                 stream.readVarInt(),
-                stream.readVarInt(),
-                stream.readBoolean()
+                stream.readVarInt()
             )
         }
     }

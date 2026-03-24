@@ -6,6 +6,7 @@ import net.xenyria.xenon.core.Axis
 import net.xenyria.xenon.demo.applyRotation
 import net.xenyria.xenon.demo.feature.gizmo.EditorEntity
 import net.xenyria.xenon.demo.feature.gizmo.XenonGizmos
+import net.xenyria.xenon.forklift.TransformationMode
 import org.bukkit.block.BlockType
 import org.bukkit.craftbukkit.block.data.CraftBlockData
 import org.bukkit.entity.BlockDisplay
@@ -54,6 +55,7 @@ class GizmoCommand : BasicCommand {
                 transform.scale.set(scale)
                 display.transformation = transform
             },
+            allowedModes = setOf(TransformationMode.TRANSLATE, TransformationMode.SCALE),
             rotationAxes = setOf(Axis.X, Axis.Y, Axis.Z)
         )
         XenonGizmos.addEntity(entity)

@@ -19,8 +19,8 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
         _state = mode.createMode(game, target)
     }
 
-    fun render(renderer: IGameRenderer, selected: Boolean, index: Int) {
-        _state.render(renderer, selected, index)
+    fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
+        _state.render(renderer, isSelected, isTransparent)
     }
 
     fun onInteract(mouse: MouseButtonEvent): GizmoInteractionResult {
@@ -32,6 +32,7 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
     }
 
     fun getStatusMessage(): Message? {
+        if (!supportsCurrentMode()) return null
         return _state.getStatus()
     }
 
@@ -40,8 +41,12 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
     }
 
     fun getErrorMessage(): String? {
-        if (!target.supportedModes.contains(_state.type)) return "forklift_unsupported_mode"
+        if (!supportsCurrentMode()) return "forklift_unsupported_mode"
         return null
+    }
+
+    fun supportsCurrentMode(): Boolean {
+        return target.supportedModes.contains(_state.type)
     }
 
 }
