@@ -17,7 +17,8 @@ data class GizmoData(
     val rotation: Vector3dc,
     val scale: Vector3dc,
     val rotationAxes: Set<Axis>,
-    val allowedModes: Set<TransformationMode>
+    val allowedModes: Set<TransformationMode>,
+    val rotationMode: RotationMode
 )
 
 fun writeGizmo(gizmoData: GizmoData, output: DataOutputStream) {
@@ -28,6 +29,7 @@ fun writeGizmo(gizmoData: GizmoData, output: DataOutputStream) {
     output.writeVec3D(gizmoData.scale)
     output.writeSet(gizmoData.rotationAxes) { output.writeByte(it.ordinal) }
     output.writeSet(gizmoData.allowedModes) { output.writeByte(it.ordinal) }
+    output.writeByte(gizmoData.rotationMode.ordinal)
 }
 
 fun readGizmo(input: DataInputStream): GizmoData {
@@ -38,6 +40,7 @@ fun readGizmo(input: DataInputStream): GizmoData {
         input.readVec3D(),
         input.readVec3D(),
         input.readSet { Axis.entries[it.readByte().toInt()] },
-        input.readSet { TransformationMode.entries[it.readByte().toInt()] }
+        input.readSet { TransformationMode.entries[it.readByte().toInt()] },
+        RotationMode.entries[input.readByte().toInt()]
     )
 }

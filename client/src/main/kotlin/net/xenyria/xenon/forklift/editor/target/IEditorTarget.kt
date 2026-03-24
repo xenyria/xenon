@@ -1,6 +1,7 @@
 package net.xenyria.xenon.forklift.editor.target
 
 import net.xenyria.xenon.core.Axis
+import net.xenyria.xenon.core.RotationMode
 import net.xenyria.xenon.forklift.editor.EditorMode
 import org.joml.Vector3d
 import org.joml.Vector3dc
@@ -17,6 +18,8 @@ interface IEditorTarget {
     var rotation: Vector3d
 
     val supportedModes: Set<EditorMode>
+
+    val rotationMode: RotationMode
 
     val supportedRotationAxes: Set<Axis>
 

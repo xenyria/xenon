@@ -2,8 +2,7 @@ package net.xenyria.xenon.forklift.editor
 
 import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.XenonConfig
-import net.xenyria.xenon.core.Box
-import net.xenyria.xenon.core.makeCenteredBox
+import net.xenyria.xenon.core.*
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.TransformationMode
@@ -13,15 +12,12 @@ import net.xenyria.xenon.forklift.editor.overlay.EditorOverlayManager
 import net.xenyria.xenon.forklift.editor.shape.ShapeManager
 import net.xenyria.xenon.forklift.editor.state.GizmoInteractionResult
 import net.xenyria.xenon.forklift.editor.state.IEditorState
-import net.xenyria.xenon.forklift.editor.state.impl.RotateState
-import net.xenyria.xenon.forklift.editor.state.impl.ScaleState
-import net.xenyria.xenon.forklift.editor.state.impl.TranslateState
+import net.xenyria.xenon.forklift.editor.state.rotate.RotateState
+import net.xenyria.xenon.forklift.editor.state.scale.ScaleState
+import net.xenyria.xenon.forklift.editor.state.translate.TranslateState
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.editor.target.TargetManager
 import net.xenyria.xenon.forklift.editor.target.TrackedTarget
-import net.xenyria.xenon.forklift.gizmo.AXIS_X_COLOR
-import net.xenyria.xenon.forklift.gizmo.AXIS_Y_COLOR
-import net.xenyria.xenon.forklift.gizmo.AXIS_Z_COLOR
 import net.xenyria.xenon.forklift.gizmo.GizmoData
 import net.xenyria.xenon.forklift.overlay.TextOverlayData
 import net.xenyria.xenon.message.Message

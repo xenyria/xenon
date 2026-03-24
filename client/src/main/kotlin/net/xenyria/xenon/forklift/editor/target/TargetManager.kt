@@ -168,17 +168,18 @@ class TargetManager(val client: IGameClient) {
                 targets.add(0, entityInLineOfSight)
             }
         }
-        targets.removeIf {
-            val uuid = _activeEditors[it.target.uuid]
-            return@removeIf uuid != null && uuid != client.getPlayerId()
-        }
 
         return targets
     }
 
     @Synchronized
     fun getAvailableTargets(): List<TrackedTarget> {
-        return _availableTargets.toList()
+        val targets = _availableTargets.toMutableList()
+        targets.removeIf {
+            val uuid = _activeEditors[it.target.uuid]
+            return@removeIf uuid != null && uuid != client.getPlayerId()
+        }
+        return targets
     }
 
     fun setActiveTarget(candidate: TrackedTarget) {
@@ -266,7 +267,8 @@ class TargetManager(val client: IGameClient) {
                 target.rotation,
                 target.scale,
                 target.allowedModes.map { EditorMode.from(it) }.toSet(),
-                target.rotationAxes
+                target.rotationAxes,
+                target.rotationMode
             )
         }
     }

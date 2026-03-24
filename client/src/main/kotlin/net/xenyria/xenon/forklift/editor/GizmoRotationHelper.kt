@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.editor
 
 import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.forklift.editor.state.impl.ROTATION_GIZMO_RADIUS
+import net.xenyria.xenon.forklift.editor.state.rotate.ROTATION_GIZMO_RADIUS
 import org.joml.Matrix4d
 import org.joml.Matrix4f
 import org.joml.Vector3d

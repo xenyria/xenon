@@ -1,16 +1,12 @@
-package net.xenyria.xenon.forklift.editor.state.impl
+package net.xenyria.xenon.forklift.editor.state.rotate
 
-import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.core.format
-import net.xenyria.xenon.core.getVectorComponent
-import net.xenyria.xenon.core.setVectorComponent
+import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.state.*
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.gizmo.getAxisColor
 import net.xenyria.xenon.forklift.render.IGameRenderer
 import net.xenyria.xenon.forklift.render.gizmo.getAxisEditorColor
 import net.xenyria.xenon.forklift.render.multiplyColor
@@ -31,14 +27,21 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
     private val _rotator = GizmoRotator(game, target)
 
     fun isAxisAvailable(axis: Axis): Boolean {
+        if (!target.rotationMode.supportedAxes.contains(axis)) return false
         return target.supportedRotationAxes.contains(axis)
+    }
+
+    private fun getRingRotation(axis: Axis): Float {
+        if (axis == Axis.Z) return 90.0F
+        if (axis == Axis.X) return if (target.rotationMode == RotationMode.YAW_PITCH) target.rotation.y.toFloat() else 0.0F
+        return 0.0F
     }
 
     override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
         val hoveringAxis = getSelectedAxis()
         if (!isSelected) _rotator.resetSelectedAxis()
 
-        val alpha = if (isSelected && !isTransparent) 255 else 8
+        val alpha = if (isSelected || !isTransparent) 255 else 8
 
         val editingAxis = _rotator.editingAxis
         if (isAxisAvailable(Axis.Y) && (editingAxis == null || editingAxis === Axis.Y)) {
@@ -116,7 +119,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
     }
 
     override fun handleMouseMovement(movement: Vector2d) {
-        _rotator.onMouseMove(game, movement)
+        _rotator.onMouseMove(game)
     }
 
     override val type: EditorMode = EditorMode.ROTATE

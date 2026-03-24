@@ -2,6 +2,23 @@ package net.xenyria.xenon.core
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import java.awt.Color
+
+val AXIS_X_COLOR = Color(255, 64, 64)
+val AXIS_Y_COLOR = Color(64, 255, 64)
+val AXIS_Z_COLOR = Color(64, 64, 255)
+
+const val AXIS_EDIT_LENGTH = 1.0
+
+private val AXIS_COLORS = mapOf(
+    Axis.X to AXIS_X_COLOR,
+    Axis.Y to AXIS_Y_COLOR,
+    Axis.Z to AXIS_Z_COLOR
+)
+
+fun getAxisColor(axis: Axis): Color {
+    return requireNotNull(AXIS_COLORS[axis]) { "Encountered unknown axis $axis" }
+}
 
 enum class Axis(positive: Vector3dc, negative: Vector3dc) {
 

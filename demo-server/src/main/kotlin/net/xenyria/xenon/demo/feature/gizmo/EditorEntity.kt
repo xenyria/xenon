@@ -1,6 +1,7 @@
 package net.xenyria.xenon.demo.feature.gizmo
 
 import net.xenyria.xenon.core.Axis
+import net.xenyria.xenon.core.RotationMode
 import net.xenyria.xenon.forklift.TransformationMode
 import net.xenyria.xenon.forklift.gizmo.GizmoData
 import org.joml.Vector3dc
@@ -15,7 +16,8 @@ class EditorEntity(
     private val scaleGetter: () -> Vector3dc,
     private val scaleSetter: (Vector3dc) -> Unit,
     val rotationAxes: Set<Axis> = Axis.entries.toSet(),
-    val allowedModes: Set<TransformationMode> = TransformationMode.entries.toSet()
+    val allowedModes: Set<TransformationMode> = TransformationMode.entries.toSet(),
+    val rotationMode: RotationMode
 ) {
 
     fun setPosition(position: Vector3dc) {
@@ -47,7 +49,8 @@ class EditorEntity(
             rotationGetter(),
             scaleGetter(),
             rotationAxes,
-            allowedModes
+            allowedModes,
+            rotationMode
         )
     }
 

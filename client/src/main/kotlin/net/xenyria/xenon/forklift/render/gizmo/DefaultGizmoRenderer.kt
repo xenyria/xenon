@@ -1,11 +1,7 @@
 package net.xenyria.xenon.forklift.render.gizmo
 
-import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.core.deltaOf
-import net.xenyria.xenon.core.makeCenteredBox
+import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
-import net.xenyria.xenon.forklift.gizmo.AXIS_EDIT_LENGTH
-import net.xenyria.xenon.forklift.gizmo.getAxisColor
 import net.xenyria.xenon.forklift.render.IGameRenderer
 import net.xenyria.xenon.forklift.render.multiplyColor
 import net.xenyria.xenon.forklift.render.primitive.BoxPrimitive

@@ -1,15 +1,11 @@
-package net.xenyria.xenon.forklift.editor.state.impl
+package net.xenyria.xenon.forklift.editor.state.scale
 
-import net.xenyria.xenon.core.Axis
-import net.xenyria.xenon.core.deltaOf
-import net.xenyria.xenon.core.format
-import net.xenyria.xenon.core.getVectorComponent
+import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.IGameClient
 import net.xenyria.xenon.forklift.editor.state.IEditorCommonState
 import net.xenyria.xenon.forklift.editor.state.MODIFIERS_COLOR
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.gizmo.getAxisColor
 import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
 import net.xenyria.xenon.forklift.render.roundToNearestMultiple
 import net.xenyria.xenon.message.Message
