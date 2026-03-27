@@ -27,10 +27,12 @@ object XenonPlayerManager {
         _players.add(XenonPlayer(player))
     }
 
+    fun getPlayerOrNull(uuid: UUID): XenonPlayer? {
+        return _players.find { it.player.uniqueId == uuid }
+    }
+
     fun getPlayer(uuid: UUID): XenonPlayer {
-        return requireNotNull(
-            _players.find { it.player.uniqueId == uuid }
-        ) { "Couldn't find any player by ID $uuid" }
+        return requireNotNull(getPlayerOrNull(uuid)) { "Couldn't find any player by ID $uuid" }
     }
 
     fun removePlayer(player: Player) {

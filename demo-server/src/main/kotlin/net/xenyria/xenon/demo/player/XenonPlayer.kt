@@ -20,7 +20,6 @@ import net.xenyria.xenon.protocol.serverbound.handshake.ServerboundHandshakeRequ
 import net.xenyria.xenon.protocol.serverbound.state.ServerboundRequestModeSwitchPacket
 import net.xenyria.xenon.protocol.serverbound.state.ServerboundUpdateSelectionPacket
 import net.xenyria.xenon.server.IXenonClient
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.joml.Vector3d
 import org.joml.Vector3dc
@@ -28,10 +27,9 @@ import java.util.*
 
 class XenonPlayer(val player: Player) : IXenonClient {
 
-    init {
-        Bukkit.getScheduler().runTaskLater(XenonDemoPlugin.instance, { task ->
-            sendXenonMessage(ClientboundHandshakeStartPacket())
-        }, 10L)
+    fun startHandshake() {
+        if (isActive) return
+        sendXenonMessage(ClientboundHandshakeStartPacket())
     }
 
     fun update() {

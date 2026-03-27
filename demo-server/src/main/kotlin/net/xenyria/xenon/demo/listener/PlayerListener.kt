@@ -1,5 +1,6 @@
 package net.xenyria.xenon.demo.listener
 
+import io.papermc.paper.event.player.PlayerClientLoadedWorldEvent
 import net.xenyria.xenon.demo.feature.gizmo.XenonGizmos
 import net.xenyria.xenon.demo.player.XenonPlayerManager
 import org.bukkit.event.EventHandler
@@ -12,6 +13,12 @@ object PlayerListener : Listener {
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
         XenonPlayerManager.addPlayer(event.player)
+    }
+
+    @EventHandler
+    fun onPlayerLoaded(event: PlayerClientLoadedWorldEvent) {
+        val player = XenonPlayerManager.getPlayerOrNull(event.player.uniqueId) ?: return
+        player.startHandshake()
     }
 
     @EventHandler
