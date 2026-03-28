@@ -18,6 +18,7 @@ import net.xenyria.xenon.protocol.clientbound.shape.ClientboundResetShapesPacket
 import net.xenyria.xenon.protocol.clientbound.shape.ClientboundUpdateShapesPacket
 import net.xenyria.xenon.protocol.clientbound.state.ClientboundAcknowledgeModeSwitchPacket
 import net.xenyria.xenon.protocol.clientbound.state.ClientboundUpdateConfigPacket
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundClickGizmoPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundReleaseGizmoPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundRequestGizmoPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
@@ -67,6 +68,7 @@ object XenonPacketRegistry {
     val SERVERBOUND_RELEASE_GIZMO = makePacketType("release_gizmo", ::ServerboundReleaseGizmoPacket)
     val SERVERBOUND_REQUEST_GIZMO = makePacketType("request_gizmo", ::ServerboundRequestGizmoPacket)
     val SERVERBOUND_UPDATE_GIZMO = makePacketType("update_gizmo", ::ServerboundUpdateGizmoPacket)
+    val SERVERBOUND_CLICK_GIZMO = makePacketType("click_gizmo", ::ServerboundClickGizmoPacket)
 
     // Forklift / Debug Shapes
     val CLIENTBOUND_REMOVE_SHAPES = makePacketType("remove_shapes", ::ClientboundRemoveShapesPacket)

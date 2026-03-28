@@ -9,6 +9,7 @@ class MouseButtonEvent(val button: MouseButton?, val action: MouseButtonAction?)
     val isReleased: Boolean get() = action == MouseButtonAction.RELEASE
     val isPressed: Boolean get() = action == MouseButtonAction.PRESS
     val isLeftMouseButton: Boolean get() = button == MouseButton.LEFT
+    val isMiddleMouseButton: Boolean get() = button == MouseButton.MIDDLE
 
     enum class MouseButton {
         LEFT,

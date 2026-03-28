@@ -8,6 +8,7 @@ import net.xenyria.xenon.forklift.editor.state.GizmoInteractionResult
 import net.xenyria.xenon.forklift.editor.state.IEditorState
 import net.xenyria.xenon.forklift.render.IGameRenderer
 import net.xenyria.xenon.message.Message
+import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundClickGizmoPacket
 import org.joml.Vector2d
 
 class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMode: EditorMode) {
@@ -24,6 +25,11 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
     }
 
     fun onInteract(mouse: MouseButtonEvent): GizmoInteractionResult {
+        if (mouse.isMiddleMouseButton && mouse.isPressed) {
+            // Middle-clicking a gizmo sends a packet to the server for editing other properties of the selected entity
+            game.sendPacket(ServerboundClickGizmoPacket(target.uuid))
+            return GizmoInteractionResult.NONE
+        }
         return _state.onInteract(mouse)
     }
 
