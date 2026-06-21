@@ -229,7 +229,7 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
                 if (axis == Axis.Y && (intersection.face != CubeFace.UP && intersection.face != CubeFace.DOWN))
                     isWithinRange = true
                 if (isWithinRange)
-                    results.add(axis to distance)
+                    results.add(axis to intersection.distance)
             }
         }
         if (results.isEmpty()) return null
