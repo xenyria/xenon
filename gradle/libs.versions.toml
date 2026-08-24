@@ -1,0 +1,7 @@
+[libraries]
+discord-game-sdk4j = { group = "com.github.JnCrMx", name = "discord-game-sdk4j", version = "1.0.0" }
+org-json = { group = "org.json", name = "json", version = "20260814" }
+openhft-zero_allocation_hashing = { group = "net.openhft", name = "zero-allocation-hashing", version = "2026.0" }
+org-joml = { group = "org.joml", name = "joml", version = "1.10.9" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.11.0" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version = "2.3.0" }

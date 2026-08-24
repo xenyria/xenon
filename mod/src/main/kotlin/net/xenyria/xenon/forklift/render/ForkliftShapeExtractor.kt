@@ -9,10 +9,15 @@ import net.xenyria.xenon.forklift.editor.RenderableGizmo
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
 import net.xenyria.xenon.forklift.render.shape.ShapeRenderers
+import net.xenyria.xenon.game
+import net.xenyria.xenon.message.Message
+import net.xenyria.xenon.message.MessageComponent
+import net.xenyria.xenon.message.MessageFormatter
 import net.xenyria.xenon.shape.IEditorShape
 import net.xenyria.xenon.util.parseComponentFromJSON
 import net.xenyria.xenon.xenon
 import org.joml.Vector3dc
+import java.awt.Color
 
 /**
  * Represents a renderable debug shape. Shapes can also have text rendered above them
@@ -53,7 +58,10 @@ object ForkliftShapeExtractor {
         val forklift = xenon.getForkliftOrNull()
         if (forklift != null && forklift.editor.isActive && config.developer.enableGizmos)
             for (gizmo in gizmos) {
-                if (gizmo.error != null || !xenon.client.isInView(gizmo.cullingBox)) continue
+                val alwaysRender = forklift.editor.isSelected(gizmo.target.target.uuid) || gizmo.isSelected
+                if(!alwaysRender) {
+                    if (gizmo.error != null || !xenon.client.isInView(gizmo.cullingBox)) continue
+                }
                 gizmo.target.render(renderAdapter, gizmo.isSelected, gizmo.isTransparent)
             }
 

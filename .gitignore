@@ -46,3 +46,12 @@ bin/
 
 ### Paper
 demo-server/run
+/.idea/inspectionProfiles/
+/.idea/.gitignore
+/.idea/compiler.xml
+/.idea/discord.xml
+/.idea/gradle.xml
+/.idea/kotlinc.xml
+/.idea/misc.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

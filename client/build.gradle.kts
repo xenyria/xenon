@@ -17,8 +17,8 @@ dependencies {
     testImplementation(kotlin("test"))
     api(project(":core"))
 
-    api("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
-    shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
+    api(libs.discord.game.sdk4j)
+    implementation(libs.org.joml)
 }
 
 kotlin {

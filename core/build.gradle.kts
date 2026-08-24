@@ -34,10 +34,10 @@ version = "1.0.0"
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("org.json:json:20250517")
-    implementation("net.openhft:zero-allocation-hashing:0.16")
-    api("org.joml:joml:1.10.8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+    implementation(libs.org.json)
+    implementation(libs.openhft.zero.allocation.hashing)
+    implementation(libs.org.joml)
+    implementation(libs.kotlin.serialization.json)
 }
 
 java {

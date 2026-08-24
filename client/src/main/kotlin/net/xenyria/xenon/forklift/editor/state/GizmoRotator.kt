@@ -187,7 +187,6 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
         if (cameraPosition.distance(target.position) > 7) return null
 
         val cameraDirection = camera.direction
-
         val position = target.position
 
         val thickness = 0.01

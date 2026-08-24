@@ -16,12 +16,12 @@ plugins {
     kotlin("plugin.serialization") version "2.3.0"
 }
 
-val minecraft_version: String by project
-val loader_version: String by project
-val fabric_kotlin_version: String by project
-val fabric_api_version: String by project
-val yacl_version: String by project
-val modmenu_version: String by project
+val minecraftVersion = project.findProperty("minecraft_version")
+val loaderVersion = project.findProperty("loader_version")
+val fabricKotlinVersion = project.findProperty("fabric_kotlin_version")
+val fabricApiVersion = project.findProperty("fabric_api_version")
+val yaclVersion = project.findProperty("yacl_version")
+val modmenuVersion = project.findProperty("modmenu_version")
 
 base {
     archivesName.set(project.property("archives_base_name") as String)
@@ -57,21 +57,18 @@ repositories {
 
 dependencies {
     // To change the versions see the gradle.properties file
-    minecraft("com.mojang:minecraft:${minecraft_version}")
+    minecraft("com.mojang:minecraft:${minecraftVersion}")
     mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:${loader_version}")
+    modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}")
-    modImplementation("dev.isxander:yet-another-config-lib:${yacl_version}")
-    modImplementation("com.terraformersmc:modmenu:${modmenu_version}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+    modImplementation("dev.isxander:yet-another-config-lib:${yaclVersion}")
+    modImplementation("com.terraformersmc:modmenu:${modmenuVersion}")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
-    implementation("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
-    shadow("com.github.JnCrMx:discord-game-sdk4j:v1.0.0")
-    implementation(project(":core"))
+    implementation(libs.kotlin.serialization.json)
+    implementation(libs.discord.game.sdk4j)
     shadow(project(":core"))
-    implementation(project(":client"))
     shadow(project(":client"))
 }
 

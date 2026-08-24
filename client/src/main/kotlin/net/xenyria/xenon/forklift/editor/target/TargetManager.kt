@@ -116,7 +116,8 @@ class TargetManager(val client: IGameClient) {
         var index = 0
 
         for (entry in targets) {
-            if (!isInFieldOfView(entry.target)) continue
+            val isSelected = activeId != null && entry.target.uuid == activeId
+            if (!isSelected && !isInFieldOfView(entry.target)) continue
             val editorPlayer = getActiveEditor(entry.target.uuid)
 
             if (editorPlayer != null && editorPlayer != client.getPlayerId()) continue
@@ -131,7 +132,7 @@ class TargetManager(val client: IGameClient) {
             renderList.add(
                 RenderableGizmo(
                     entry,
-                    activeId != null && entry.target.uuid == activeId,
+                    isSelected,
                     isTransparent,
                     error
                 )
