@@ -3,32 +3,29 @@ package net.xenyria.xenon.input.keyboard
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.KeyEvent
 import net.xenyria.xenon.game
-import net.xenyria.xenon.mixin.KeyboardHandlerInvoker
 import net.xenyria.xenon.xenon
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
 private data class HeldKey(val keyCode: Int, val scanCode: Int)
 
-class KeyboardManager(windowId: Long, invoker: KeyboardHandlerInvoker) {
+class KeyboardManager(windowId: Long) {
 
-    private val keyboardInvoker: KeyboardHandlerInvoker = invoker
-    val simulator = KeyboardSimulator(windowId, keyboardInvoker)
-
-    private val _heldKeys = HashMap<Int, HeldKey>()
+    private val heldKeys = HashMap<Int, HeldKey>()
+    val simulator = KeyboardSimulator(windowId)
 
     @Synchronized
     fun releaseAllKeys() {
-        val keysToRelease = _heldKeys
+        val keysToRelease = heldKeys
         for (key in keysToRelease.values) {
             simulator.simulateKeyRelease(key.keyCode, key.scanCode)
         }
-        _heldKeys.clear()
+        heldKeys.clear()
     }
 
     fun onKeyPress(window: Long, action: KeyAction, keyEvent: KeyEvent, callbackInfo: CallbackInfo) {
         if (window != Minecraft.getInstance().window.handle()) return
         if (action == KeyAction.DOWN) {
-            if (game.gui.chat.isChatFocused) return
+            if (game.gui.hud.chat.isChatFocused) return
             handleKeyPress(keyEvent.key)
         }
 
@@ -42,9 +39,9 @@ class KeyboardManager(windowId: Long, invoker: KeyboardHandlerInvoker) {
 
         synchronized(this) {
             if (action == KeyAction.DOWN) {
-                _heldKeys[keyEvent.key] = HeldKey(keyEvent.key, keyEvent.scancode)
+                heldKeys[keyEvent.key] = HeldKey(keyEvent.key, keyEvent.keycode)
             } else if (action == KeyAction.UP) {
-                _heldKeys.remove(keyEvent.key)
+                heldKeys.remove(keyEvent.key)
             }
         }
     }

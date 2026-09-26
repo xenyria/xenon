@@ -79,7 +79,8 @@ class SphereBuilder(
 
 }
 
-class SpherePrimitive(val position: Vector3dc, val color: Color, val radius: Float, val stacks: Int, val slices: Int) : IRenderPrimitive() {
+class SpherePrimitive(val position: Vector3dc, val color: Color, val radius: Float, val stacks: Int, val slices: Int) :
+    IRenderPrimitive() {
     override fun getVertices(): List<Vertex> {
         val builder = SphereBuilder(position, color, radius, stacks, slices)
         return builder.vertices

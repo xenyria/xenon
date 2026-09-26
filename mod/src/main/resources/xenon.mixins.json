@@ -1,25 +1,25 @@
 {
-    "required": true,
-    "package": "net.xenyria.xenon.mixin",
-    "compatibilityLevel": "JAVA_21",
-    "mixins": [
-        "KeyboardMixin",
-        "KeyboardHandlerInvoker",
-        "StartUpMixin",
-        "GameRendererMixin",
-        "GameTickMixin",
-        "MouseMixin",
-        "MouseInvoker",
-        "DisconnectMixin",
-        "ChatMixin",
-        "HudMixin",
-        "CameraModeMixin",
-        "FrustumMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    },
-    "overwrites": {
-        "requireAnnotations": true
-    }
+  "required": true,
+  "package": "net.xenyria.xenon.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "KeyboardMixin",
+    "StartUpMixin",
+    "GameRendererMixin",
+    "GameTickMixin",
+    "MouseMixin",
+    "MouseInvoker",
+    "DisconnectMixin",
+    "ChatMixin",
+    "CommandSuggestionMixin",
+    "HudMixin",
+    "CameraModeMixin",
+    "FrustumMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
 }

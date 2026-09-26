@@ -37,7 +37,7 @@ class GizmoCommand : BasicCommand {
 
             val display = sender.world.spawnEntity(spawnLoc, EntityType.BLOCK_DISPLAY) as BlockDisplay
             display.transformation.scale
-            display.block = CraftBlockData.newData(BlockType.OAK_PLANKS, "")
+            display.block = CraftBlockData.fromString(BlockType.OAK_PLANKS, "")
             display.interpolationDuration = 2
             display.teleportDuration = 2
 
@@ -76,7 +76,7 @@ class GizmoCommand : BasicCommand {
         } else if (args[0] == "yaw_pitch") {
             val display = sender.world.spawnEntity(spawnLoc, EntityType.BLOCK_DISPLAY) as BlockDisplay
             display.transformation.scale
-            display.block = CraftBlockData.newData(BlockType.OAK_PLANKS, "")
+            display.block = CraftBlockData.fromString(BlockType.OAK_PLANKS, "")
             display.teleportDuration = 2
 
             val entity = EditorEntity(

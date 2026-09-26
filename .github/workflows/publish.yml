@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
 
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
@@ -28,5 +28,5 @@ jobs:
       - name: Publish to Maven
         run: ./gradlew publish
         env:
-          PXGD_PUBLIC_USERNAME: ${{ secrets.PXGD_PUBLIC_USERNAME }}
-          PXGD_PUBLIC_PASSWORD: ${{ secrets.PXGD_PUBLIC_PASSWORD }}
+          PXGD_PUBLIC_USERNAME: ${{ secrets.PGL_PUBLIC_USERNAME }}
+          PXGD_PUBLIC_PASSWORD: ${{ secrets.PGL_PUBLIC_PASSWORD }}

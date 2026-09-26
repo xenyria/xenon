@@ -3,7 +3,7 @@ package net.xenyria.xenon.forklift.render.overlay
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.DeltaTracker
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.resources.Identifier
 import net.xenyria.xenon.MOD_ID
 import net.xenyria.xenon.Xenon
@@ -19,7 +19,7 @@ import java.awt.Color
 
 class ForkliftOverlayRenderer(private val xenon: Xenon) {
 
-    fun render(graphics: GuiGraphics, tickCounter: DeltaTracker) {
+    fun render(graphics: GuiGraphicsExtractor, deltaTracker:  DeltaTracker) {
         val forklift = xenon.getForkliftOrNull()
         if (forklift != null && forklift.editor.isActive) {
             renderEditorOverlay(graphics)
@@ -29,7 +29,7 @@ class ForkliftOverlayRenderer(private val xenon: Xenon) {
         }
     }
 
-    private fun renderEditorOverlay(graphics: GuiGraphics) {
+    private fun renderEditorOverlay(graphics: GuiGraphicsExtractor) {
         val bg = Color(32, 32, 32, 196)
         val width = game.window.guiScaledWidth
         val height = game.window.guiScaledHeight

@@ -18,7 +18,7 @@ private const val DEFAULT_TRANSLATION_FINE_SENSITIVITY = 0.00125
 
 class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
 
-    private var _currentTargetPosition: Vector3d = Vector3d(0.0)
+    private var currentTargetPosition: Vector3d = Vector3d(0.0)
     override val renderAxisType: AxisRenderType = AxisRenderType.CONE
 
     override fun shouldRotateGizmo(): Boolean {
@@ -30,19 +30,20 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
     }
 
     @Synchronized
-    override fun handleDelta(axis: Axis, displacement: Double) {
-        val sensitivity = if (game.hasShiftDown()) DEFAULT_TRANSLATION_FINE_SENSITIVITY else DEFAULT_TRANSLATION_SENSITIVITY
+    override fun moveByDelta(axis: Axis, displacement: Double) {
+        val sensitivity =
+            if (game.hasShiftDown()) DEFAULT_TRANSLATION_FINE_SENSITIVITY else DEFAULT_TRANSLATION_SENSITIVITY
         val displacement = displacement * (sensitivity * -1)
 
         val delta = axis.positive.mul(displacement)
-        val newPosition = Vector3d(_currentTargetPosition).add(delta)
+        val newPosition = Vector3d(currentTargetPosition).add(delta)
 
         if (game.hasControlDown()) {
             target.position = roundToNearestMultiple(newPosition, getSnapValue(game), axis)
         } else {
             target.position = newPosition
         }
-        _currentTargetPosition = newPosition
+        currentTargetPosition = newPosition
     }
 
     private fun appendEditingModifiers(): String {
@@ -54,7 +55,7 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
 
     @Synchronized
     override fun beginEdit() {
-        _currentTargetPosition = target.position
+        currentTargetPosition = target.position
     }
 
     override val type: EditorMode = EditorMode.TRANSLATE

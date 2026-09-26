@@ -36,13 +36,17 @@ object GameEvents {
         if (xenon.onMouseButton(mouseButtonInfo, action)) info.cancel()
     }
 
-    fun onMouseMove(windowId: Long, x: Double, y: Double, info: CallbackInfo) {
+    fun onMouseMove(windowId: Long, x: Double, y: Double, relativeX: Double, relativeY: Double, info: CallbackInfo) {
         if (windowId != game.window.handle()) return
-        if (xenon.onMouseMove(Vector2d(x, y))) {
+        if (xenon.onMouseMove(Vector2d(relativeX, relativeY))) {
             info.cancel()
         }
     }
 
+    /**
+     * Processes a keybind press.
+     * Returns true if the key press should be discarded. (currently used for camera perspective locking)
+     */
     fun onTogglePerspectiveKeybind(): Boolean {
         val xenon = Xenon.getOrNull() ?: return false
         return xenon.isCameraModeLocked()

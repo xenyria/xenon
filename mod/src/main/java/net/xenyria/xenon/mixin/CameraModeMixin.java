@@ -15,7 +15,7 @@ public final class CameraModeMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z",
-                    ordinal = 0 // adjust this!
+                    ordinal = 0
             )
     )
     private boolean preventPerspectiveToggle(KeyMapping instance) {

@@ -1,39 +1,39 @@
 {
-    "schemaVersion": 1,
-    "id": "xenon",
-    "version": "${version}",
-    "name": "Xenon",
-    "description": "Discord Rich Presence, Level Editor, QoL features and more! (xenyria.net)",
-    "authors": [
-        "Luma_x3"
+  "schemaVersion": 1,
+  "id": "xenon",
+  "version": "${version}",
+  "name": "Xenon",
+  "description": "Discord Rich Presence, Level Editor, QoL features and more! (xenyria.net)",
+  "authors": [
+    "Luma_x3"
+  ],
+  "contact": {
+    "homepage": "https://xenyria.net/",
+    "sources": "https://github.com/xenyria/xenon"
+  },
+  "license": "MIT",
+  "icon": "assets/xenon/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "modmenu": [
+      "net.xenyria.xenon.config.XenonModMenuIntegration"
     ],
-    "contact": {
-        "homepage": "https://xenyria.net/",
-        "sources": "https://github.com/xenyria/xenon"
-    },
-    "license": "MIT",
-    "icon": "assets/xenon/icon.png",
-    "environment": "*",
-    "entrypoints": {
-        "modmenu": [
-            "net.xenyria.xenon.config.XenonModMenuIntegration"
-        ],
-        "main": [
-            {
-                "value": "net.xenyria.xenon.XenonEntrypoint",
-                "adapter": "kotlin"
-            }
-        ]
-    },
-    "mixins": [
-        "xenon.mixins.json"
-    ],
-    "depends": {
-        "fabricloader": ">=0.17.2",
-        "minecraft": "~1.21.11",
-        "java": ">=21",
-        "fabric-api": "*",
-        "fabric-language-kotlin": "*",
-        "yet_another_config_lib_v3": ">=3.6.1+1.21.2-fabric"
-    }
+    "main": [
+      {
+        "value": "net.xenyria.xenon.XenonEntrypoint",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": [
+    "xenon.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*",
+    "yet_another_config_lib_v3": ">=3.9.7+26.3-fabric"
+  }
 }

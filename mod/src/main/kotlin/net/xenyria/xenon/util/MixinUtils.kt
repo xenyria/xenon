@@ -33,3 +33,7 @@ fun getCurrentHudOffset(): Int {
 fun getCurrentChatOffset(): Int {
     return if (xenon.shouldShiftHud()) CHAT_OFFSET else 0
 }
+
+fun shouldShift(): Boolean {
+    return xenon.shouldShiftHud()
+}

@@ -1,7 +1,6 @@
 package net.xenyria.xenon.forklift.render
 
-import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.DepthTestFunction
+import com.mojang.renderpearl.api.pipeline.*
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 import net.xenyria.xenon.MOD_ID
@@ -19,14 +18,15 @@ object XenonRenderPipelines {
         _pipelines[RenderPipelineType.SHAPES_THROUGH_WALLS] = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/shapes_through_walls"))
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false, 0F, 0F))
+                .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                 .build()
         )
         _pipelines[RenderPipelineType.SHAPES] = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/shapes_regular"))
-                .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-                .withDepthWrite(true)
+                .withDepthStencilState(DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false, 0F, 0F))
+                .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                 .build()
         )
     }
@@ -35,13 +35,15 @@ object XenonRenderPipelines {
         _pipelines[RenderPipelineType.LINES_THROUGH_WALLS] = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/lines_through_walls"))
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false, 0F, 0F))
+                .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                 .build()
         )
         _pipelines[RenderPipelineType.LINES] = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(MOD_ID, "pipeline/lines_regular"))
-                .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+                .withDepthStencilState(DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false, 0F, 0F))
+                .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                 .build()
         )
     }

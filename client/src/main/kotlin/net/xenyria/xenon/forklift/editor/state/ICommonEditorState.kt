@@ -26,7 +26,7 @@ private data class EditingSession(val axis: Axis)
 
 abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {
 
-    private val _gizmoManipulator = GizmoManipulator
+    private val gizmoManipulator = GizmoManipulator
 
     // Previous position & scale before the edit was requested
     protected var previousPosition: Vector3dc? = null
@@ -44,27 +44,27 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
         val (start, end) = getAxisLine(session.axis)
 
         val direction = directionOf(start, end)
-        val delta = _gizmoManipulator.calculateMovementDelta(game, session.axis, direction, target)
-        handleDelta(delta.axis, delta.displacement)
+        val delta = gizmoManipulator.calculateGizmoDelta(game, session.axis, direction, target)
+        moveByDelta(delta.axis, delta.displacement)
     }
 
     /**
      * Allows the underlying implementation to work with the user's input.
      */
-    abstract fun handleDelta(axis: Axis, displacement: Double)
+    abstract fun moveByDelta(axis: Axis, displacement: Double)
 
     @Synchronized
     override fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
         if (!event.isRightMouseButton) return GizmoInteractionResult.NONE
         if (event.isReleased) {
             _editingSession = null
-            _gizmoManipulator.reset()
+            gizmoManipulator.reset()
             return GizmoInteractionResult.END_EDIT
         } else if (event.isPressed) {
             val query = querySelectedAxis()
             if (query != null) {
                 _editingSession = EditingSession(query.axis)
-                _gizmoManipulator.reset()
+                gizmoManipulator.reset()
                 previousPosition = Vector3d(target.position)
                 previousScale = Vector3d(target.scale)
                 game.editor.enableDragMode(target.uuid)

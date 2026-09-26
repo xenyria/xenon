@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("fabric-loom") version "1.15-SNAPSHOT"
+    id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
     id("maven-publish")
     kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "9.1.0"
@@ -27,15 +27,15 @@ base {
     archivesName.set(project.property("archives_base_name") as String)
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {
@@ -58,18 +58,17 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${minecraftVersion}")
-    mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
+    implementation("net.fabricmc:fabric-loader:${loaderVersion}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
-    modImplementation("dev.isxander:yet-another-config-lib:${yaclVersion}")
-    modImplementation("com.terraformersmc:modmenu:${modmenuVersion}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+    implementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+    implementation("dev.isxander:yet-another-config-lib:${yaclVersion}")
+    implementation("com.terraformersmc:modmenu:${modmenuVersion}")
 
     implementation(libs.kotlin.serialization.json)
     implementation(libs.discord.game.sdk4j)
-    shadow(project(":core"))
-    shadow(project(":client"))
+    implementation(project(":core"))
+    implementation(project(":client"))
 }
 
 tasks.processResources {
@@ -87,7 +86,7 @@ tasks.withType<JavaCompile>().configureEach {
     // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
     // If Javadoc is generated, this must be specified in that task too.
     options.encoding = "UTF-8"
-    options.release = 21
+    options.release = 25
     options.release.set(targetJavaVersion)
 }
 
@@ -104,14 +103,6 @@ tasks.jar {
 tasks.shadowJar {
     configurations = mutableListOf(project.configurations.shadow.get())
     exclude("META-INF")
-}
-
-tasks.remapJar {
-    // wait until the shadowJar is done
-    dependsOn(tasks.shadowJar.get())
-    mustRunAfter(tasks.shadowJar.get())
-    // Set the input jar for the task. Here use the shadow Jar that include the .class of the transitive dependency
-    inputFile = tasks.shadowJar.get().archiveFile
 }
 
 // configure the maven publication

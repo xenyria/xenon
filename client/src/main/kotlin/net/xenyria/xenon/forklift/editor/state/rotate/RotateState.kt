@@ -24,7 +24,7 @@ const val ROTATION_GIZMO_LINE_WIDTH = 8.0F
 
 class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {
 
-    private val _rotator = GizmoRotator(game, target)
+    private val rotator = GizmoRotator(game, target)
 
     fun isAxisAvailable(axis: Axis): Boolean {
         if (!target.rotationMode.supportedAxes.contains(axis)) return false
@@ -39,17 +39,24 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
 
     override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
         val hoveringAxis = getSelectedAxis()
-        if (!isSelected) _rotator.resetSelectedAxis()
+        if (!isSelected) rotator.resetSelectedAxis()
 
         val alpha = if (isSelected || !isTransparent) 255 else 8
 
-        val editingAxis = _rotator.editingAxis
+        val editingAxis = rotator.editingAxis
         if (isAxisAvailable(Axis.Y) && (editingAxis == null || editingAxis === Axis.Y)) {
             // Y axis
-            var color = getAxisEditorColor(Axis.Y, hoveringAxis == Axis.Y, _rotator.editingAxis === Axis.Y)
+            var color = getAxisEditorColor(Axis.Y, hoveringAxis == Axis.Y, rotator.editingAxis === Axis.Y)
             color = Color(color.red, color.green, color.blue, alpha)
             renderer.drawPrimitives(
-                makeRingPrimitive(target.position, ROTATION_GIZMO_RADIUS, color, 0.0F, ROTATION_GIZMO_LINE_WIDTH, false),
+                makeRingPrimitive(
+                    target.position,
+                    ROTATION_GIZMO_RADIUS,
+                    color,
+                    0.0F,
+                    ROTATION_GIZMO_LINE_WIDTH,
+                    false
+                ),
                 true
             )
         }
@@ -67,15 +74,22 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
             var color = getAxisEditorColor(Axis.Z, hoveringAxis == Axis.Z, editingAxis === Axis.Z)
             color = Color(color.red, color.green, color.blue, alpha)
             renderer.drawPrimitives(
-                makeRingPrimitive(target.position, ROTATION_GIZMO_RADIUS, color, 90.0F, ROTATION_GIZMO_LINE_WIDTH, true),
+                makeRingPrimitive(
+                    target.position,
+                    ROTATION_GIZMO_RADIUS,
+                    color,
+                    90.0F,
+                    ROTATION_GIZMO_LINE_WIDTH,
+                    true
+                ),
                 true
             )
         }
 
         // Render additional editor indicator
         if (editingAxis != null) {
-            val previousRotationValue = _rotator.getPreviousRotation(editingAxis)
-            val newRotationValue = _rotator.getNewRotation(editingAxis)
+            val previousRotationValue = rotator.getPreviousRotation(editingAxis)
+            val newRotationValue = rotator.getNewRotation(editingAxis)
 
             val offset = when (editingAxis) {
                 Axis.X -> Vector3d(0.0, 0.0, ROTATION_GIZMO_RADIUS)
@@ -111,15 +125,15 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
     }
 
     override fun querySelectedAxis(): GizmoAxisIntersection? {
-        return _rotator.querySelectedAxis()
+        return rotator.querySelectedAxis()
     }
 
     override fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
-        return _rotator.onInteract(event)
+        return rotator.onInteract(event)
     }
 
     override fun handleMouseMovement(movement: Vector2d) {
-        _rotator.onMouseMove(game)
+        rotator.onMouseMove(game)
     }
 
     override val type: EditorMode = EditorMode.ROTATE
@@ -132,9 +146,9 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
     }
 
     override fun getStatus(): Message? {
-        val axis = _rotator.editingAxis
+        val axis = rotator.editingAxis
         if (game.editor.isSelected(target.uuid) && axis != null) {
-            val effectiveDelta = _rotator.getEffectiveRotation()
+            val effectiveDelta = rotator.getEffectiveRotation()
             val delta: Double = when (axis) {
                 Axis.X -> effectiveDelta.x
                 Axis.Y -> effectiveDelta.y

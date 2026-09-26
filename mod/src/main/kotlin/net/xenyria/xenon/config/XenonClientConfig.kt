@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets
 object XenonClientConfig {
 
     private var _config: XenonConfig? = null
-
     private val configFile: File get() = FabricLoader.getInstance().configDir.resolve("xenon.json").toFile()
 
     @get:Synchronized
