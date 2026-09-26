@@ -6,7 +6,7 @@ import org.joml.Vector2d
 import org.joml.Vector3d
 import org.joml.Vector3dc
 
-data class MovementDelta(val axis: Axis, val displacement: Double)
+data class GizmoOffset(val axis: Axis, val displacement: Double)
 
 object GizmoManipulator {
 
@@ -24,19 +24,16 @@ object GizmoManipulator {
         axisDirection: Vector3dc,
         cursorPos: Vector2d
     ): Double {
-        val pointA = Vector3d(objectPosition).add(Vector3d(axisDirection))
-        val pointB = Vector3d(objectPosition).add(Vector3d(axisDirection).mul(-1.0))
+        // The idea is to calculate two points on the screen to form a line.
+        // Based on this line, we'll calculate how far the cursor has traveled parallel to the line.
+        val pointA = Vector3d(objectPosition).add(Vector3d(axisDirection).mul(-128.0))
+        val pointB = Vector3d(objectPosition).add(Vector3d(axisDirection).mul(128.0))
 
         // Map 3D coordinates to 2D coordinates
         val from = game.getScreenPosition(pointA)
         val to = game.getScreenPosition(pointB)
 
         val objectPosOnScreen = game.getScreenPosition(objectPosition)
-
-        // Find the closest intersection point
-        //val closestPoint = findClosestPointOnLine(from, to, cursorPos)
-        //val delta = closestPoint.distance(objectPosOnScreen)
-
         if ((from.x() == 0.0 && from.y() == 0.0) || (to.x() == 0.0 && to.y() == 0.0)) return 0.0
 
         //val isOnPositiveSide = false
@@ -48,39 +45,32 @@ object GizmoManipulator {
         val deltaToCenter = Vector2d(objectPosOnScreen).sub(cursorPos)
         val dot = deltaToCenter.dot(direction)
 
-        if (dot.isInfinite() || dot.isNaN()) {
-            return 0.0
-        }
-
-        return dot * -1
+        if (dot.isInfinite() || dot.isNaN()) return 0.0
+        return dot * 1
     }
 
-    fun calculateMovementDelta(
+    fun calculateGizmoDelta(
         game: IGameClient,
         axis: Axis,
         direction: Vector3dc,
         target: IEditorTarget
-    ): MovementDelta {
-        val mousePos = game.getMousePosition()
-        if (lastMouseX == Double.MIN_VALUE) {
-            val origin = game.editor.dragHandler.getMousePositionBeforeDrag()
-            lastMouseX = origin.x()
-            lastMouseY = origin.y()
-        }
+    ): GizmoOffset {
+        val origin = game.editor.dragHandler.getMousePositionBeforeDrag()
+        val currentMousePos = game.editor.dragHandler.getTotalDragDelta()
 
+        // Determine how far the cursor has moved from the origin
         val originalDelta = getMovementDelta(
             game, target.position, Vector3d(direction),
-            Vector2d(lastMouseX.toInt().toDouble(), lastMouseY.toInt().toDouble())
+            Vector2d(origin.x, origin.y)
         )
         val newDelta = getMovementDelta(
             game, target.position, Vector3d(direction),
-            game.getMousePosition()
+            currentMousePos
         )
-        lastMouseX = mousePos.x()
-        lastMouseY = mousePos.y()
+        game.editor.dragHandler.resetDragCenter()
 
         val displacementDelta = newDelta - originalDelta
-        return MovementDelta(axis, displacementDelta)
+        return GizmoOffset(axis, displacementDelta)
     }
 
 

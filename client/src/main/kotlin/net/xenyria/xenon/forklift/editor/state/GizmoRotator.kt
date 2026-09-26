@@ -52,7 +52,13 @@ object GizmoRotationHelper {
         }
     }
 
-    fun getCircleVectors(center: Vector3dc, radius: Double, yaw: Float, horizontal: Boolean, resolution: Double): List<CirclePoint> {
+    fun getCircleVectors(
+        center: Vector3dc,
+        radius: Double,
+        yaw: Float,
+        horizontal: Boolean,
+        resolution: Double
+    ): List<CirclePoint> {
         val vectors = ArrayList<CirclePoint>()
 
         var rotation = 0.0
@@ -125,14 +131,13 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
         val sensitivity = if (game.hasShiftDown()) ROTATION_FINE_SENSITIVITY else ROTATION_SENSITIVITY
 
         // Store previous mouse coordinates
-        val delta = GizmoManipulator.calculateMovementDelta(
+        val delta = GizmoManipulator.calculateGizmoDelta(
             game,
             translateAxisForControls(editingAxis),
             translateAxisForControls(editingAxis).positive, target
         )
 
         val displacement = delta.displacement * sensitivity
-
         _rotationMode?.rotate(displacement, game.hasControlDown())
     }
 

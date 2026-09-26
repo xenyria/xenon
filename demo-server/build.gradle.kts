@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "8.3.0"
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.23"
     id("xyz.jpenilla.run-paper") version "3.0.0"
 }
 
@@ -19,18 +19,18 @@ repositories {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.3")
     }
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("26.3.build.+")
     implementation(libs.kotlin.stdlib)
     implementation(project(":core"))
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 tasks.test {

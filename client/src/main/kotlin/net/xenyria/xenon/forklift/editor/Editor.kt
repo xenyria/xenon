@@ -172,12 +172,13 @@ class Editor(val client: IGameClient) {
     }
 
     @Synchronized
-    fun onMouseMove(position: Vector2d) {
+    fun onMouseMove(delta: Vector2d) {
         if (!isActive) return
         val gizmo = getActiveGizmo() ?: return
-        val delta = dragHandler.getMouseMovementDelta(position.x, position.y)
-        gizmo.handleMouseMovement(delta)
-        client.updateInternalMousePosition(position.x, position.y)
+
+        val gizmoDelta = dragHandler.getDragMouseDelta(delta.x, delta.y)
+        gizmo.handleMouseMovement(gizmoDelta)
+        client.updateInternalMousePosition(delta.x, delta.y)
     }
 
     @Synchronized

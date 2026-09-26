@@ -28,16 +28,14 @@ import net.xenyria.xenon.protocol.convertPacketToBytes
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
 import net.xenyria.xenon.shape.IEditorShape
 import net.xenyria.xenon.util.toComponent
-import org.joml.Vector2d
-import org.joml.Vector3d
-import org.joml.Vector3dc
+import org.joml.*
 import java.util.*
 
 class GameClient(private val xenon: Xenon) : IGameClient {
 
     @Synchronized
     override fun getCamera(): GameCamera {
-        val cam = game.gameRenderer.mainCamera
+        val cam = game.gameRenderer.mainCamera()
         return GameCamera(
             Vector3d(cam.position().x, cam.position().y, cam.position().z),
             calculateDirection(cam.yRot(), cam.xRot())
@@ -62,14 +60,19 @@ class GameClient(private val xenon: Xenon) : IGameClient {
 
     @Synchronized
     override fun getScreenPosition(worldPosition: Vector3dc): Vector2d {
-        val projected = game.gameRenderer.projectPointToScreen(Vec3(worldPosition.x(), worldPosition.y(), worldPosition.z()))
-        // TODO: This is technically incorrect
-        return Vector2d(projected.x, (game.window.height - 1) - projected.y)
+        val mat = Matrix4d(game.gameRenderer.mainCamera().getViewRotationProjectionMatrix(Matrix4f()))
+        val camPos: Vec3 = game.gameRenderer.mainCamera().position()
+
+        val offset = Vector3d()
+        worldPosition.sub(Vector3d(camPos.x, camPos.y, camPos.z), offset)
+
+        val projected = mat.transformProject(offset)
+        return Vector2d(projected.x, projected.y)
     }
 
     @Synchronized
     override fun sendMessage(message: Message) {
-        game.chatListener.handleSystemMessage(message.toComponent(), false)
+        game.gui.chatListener().handleSystemMessage(message.toComponent(), false)
     }
 
     @Synchronized

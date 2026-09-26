@@ -12,8 +12,7 @@ import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.forklift.render.XenonRenderPipelines
 import net.xenyria.xenon.forklift.render.overlay.ForkliftOverlayRenderer
 import net.xenyria.xenon.input.keyboard.KeyboardManager
-import net.xenyria.xenon.input.mouse.fromLWJGL
-import net.xenyria.xenon.mixin.KeyboardHandlerInvoker
+import net.xenyria.xenon.input.mouse.fromSDL
 import net.xenyria.xenon.network.XenonPacketListener
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
@@ -45,10 +44,7 @@ class Xenon(val version: String) {
 
     fun initialize(game: Minecraft) {
         require(Minecraft.getInstance().window.handle() != 0L) { "Window is not initialized" }
-        _keyboard = KeyboardManager(
-            game.window.handle(),
-            game.keyboardHandler as KeyboardHandlerInvoker
-        )
+        _keyboard = KeyboardManager(game.window.handle())
         XenonRenderPipelines.initialize()
         ForkliftRenderer.initialize()
         ForkliftOverlayRenderer.initialize(this)
@@ -88,10 +84,10 @@ class Xenon(val version: String) {
     }
 
     fun onMouseButton(mouseButtonInfo: MouseButtonInfo, action: Int): Boolean {
-        if (game.screen != null) return false
+        if (game.gui.screen() != null) return false
         val forklift = xenon.getForkliftOrNull() ?: return false
 
-        val event = fromLWJGL(mouseButtonInfo.button, action, mouseButtonInfo.modifiers)
+        val event = fromSDL(mouseButtonInfo.button, action, mouseButtonInfo.modifiers)
         if (event.isRightMouseButton && event.isReleased) forklift.editor.leaveDragMode()
 
         if (forklift.editor.onMouseButton(event) && forklift.editor.isActive) {
@@ -115,10 +111,10 @@ class Xenon(val version: String) {
      * Called when the user moves their mouse.
      * @return When true, the input event is discarded - meaning it's not passed to the game.
      */
-    fun onMouseMove(mousePosition: Vector2d): Boolean {
+    fun onMouseMove(mouseDelta: Vector2d): Boolean {
         val forklift = getForkliftOrNull() ?: return false
         if (forklift.editor.isMouseLocked()) {
-            forklift.editor.onMouseMove(mousePosition)
+            forklift.editor.onMouseMove(mouseDelta)
             return true
         }
         return false

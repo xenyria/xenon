@@ -44,9 +44,10 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     }
 
     @Synchronized
-    override fun handleDelta(axis: Axis, displacement: Double) {
+    override fun moveByDelta(axis: Axis, displacement: Double) {
         var displacement = displacement
-        val sensitivity: Double = if (game.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
+        val sensitivity: Double =
+            if (game.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
         displacement *= sensitivity * -1
 
         var newScale: Vector3dc = Vector3d(initialScaleValue)

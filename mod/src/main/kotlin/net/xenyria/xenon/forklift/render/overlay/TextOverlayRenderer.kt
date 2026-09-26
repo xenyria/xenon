@@ -2,7 +2,7 @@ package net.xenyria.xenon.forklift.render.overlay
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ActiveTextCollector
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.TextAlignment
 import net.minecraft.network.chat.Component
 import net.xenyria.xenon.forklift.overlay.OverlayAnchor
@@ -67,7 +67,10 @@ object TextOverlayRenderer {
     }
 
 
-    fun render(graphics: GuiGraphics, overlay: TextOverlayData) {
+    fun render(
+        graphics: GuiGraphicsExtractor,
+        overlay: TextOverlayData
+    ) {
         render(
             graphics,
             overlay.opacity,
@@ -79,7 +82,7 @@ object TextOverlayRenderer {
     }
 
     fun render(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         opacity: Double = 1.0,
         component: Component,
         anchor: OverlayAnchor = OverlayAnchor.TOP_LEFT,

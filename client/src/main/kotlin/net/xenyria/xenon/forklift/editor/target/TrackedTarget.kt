@@ -13,15 +13,15 @@ import org.joml.Vector2d
 
 class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMode: EditorMode) {
 
-    private var _state: IEditorState = initialMode.createMode(game, target)
+    private var state: IEditorState = initialMode.createMode(game, target)
 
     fun setMode(mode: EditorMode) {
-        if (mode == _state.type) return
-        _state = mode.createMode(game, target)
+        if (mode == state.type) return
+        state = mode.createMode(game, target)
     }
 
     fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
-        _state.render(renderer, isSelected, isTransparent)
+        state.render(renderer, isSelected, isTransparent)
     }
 
     fun onInteract(mouse: MouseButtonEvent): GizmoInteractionResult {
@@ -30,20 +30,20 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
             game.sendPacket(ServerboundClickGizmoPacket(target.uuid))
             return GizmoInteractionResult.NONE
         }
-        return _state.onInteract(mouse)
+        return state.onInteract(mouse)
     }
 
     fun handleMouseMovement(delta: Vector2d) {
-        _state.handleMouseMovement(delta)
+        state.handleMouseMovement(delta)
     }
 
     fun getStatusMessage(): Message? {
         if (!supportsCurrentMode()) return null
-        return _state.getStatus()
+        return state.getStatus()
     }
 
     fun querySelectionState(): GizmoAxisIntersection? {
-        return _state.querySelectedAxis()
+        return state.querySelectedAxis()
     }
 
     fun getErrorMessage(): String? {
@@ -52,7 +52,7 @@ class TrackedTarget(val game: IGameClient, val target: IEditorTarget, initialMod
     }
 
     fun supportsCurrentMode(): Boolean {
-        return target.supportedModes.contains(_state.type)
+        return target.supportedModes.contains(state.type)
     }
 
 }

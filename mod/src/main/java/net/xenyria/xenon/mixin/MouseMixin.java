@@ -17,9 +17,9 @@ public final class MouseMixin {
         GameEvents.INSTANCE.onMouseButton(l, mouseButtonInfo, action, info);
     }
 
-    @Inject(at = @At("HEAD"), method = "onMove(JDD)V", cancellable = true)
-    public void handleCursorPos(long window, double x, double y, CallbackInfo info) {
-        GameEvents.INSTANCE.onMouseMove(window, x, y, info);
+    @Inject(at = @At("HEAD"), method = "onMove(JDDDD)V", cancellable = true)
+    public void handleCursorPos(long window, double x, double y, double relativeX, double relativeY, CallbackInfo info) {
+        GameEvents.INSTANCE.onMouseMove(window, x, y, relativeX, relativeY, info);
     }
 
 }

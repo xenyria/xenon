@@ -19,21 +19,23 @@ fun interface IPacketListener<Type : IXenonPacket> {
 object XenonPacketListener {
 
     fun initialize() {
-        PayloadTypeRegistry.playC2S().register(XenonPayload.ID, XenonPayload.CODEC)
-        PayloadTypeRegistry.playS2C().register(XenonPayload.ID, XenonPayload.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(XenonPayload.ID, XenonPayload.CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(XenonPayload.ID, XenonPayload.CODEC)
 
         ClientPlayConnectionEvents.INIT.register { _, _ ->
             xenon.getForkliftOrNull()?.reset()
         }
-        ClientPlayNetworking.registerGlobalReceiver(XenonPayload.ID, { data, ctx ->
+        ClientPlayNetworking.registerGlobalReceiver(XenonPayload.ID) { data, _ ->
             val packet = parsePacket(ByteArrayInputStream(data.bytes))
 
             val xenon = xenon
             val editor = xenon.getForkliftOrNull()?.editor
 
-            if (XenonPacketHandler.handlePacket(xenon.client, packet)) return@registerGlobalReceiver
-            if (editor != null && ForkliftPacketHandler.handlePacket(editor, packet)) return@registerGlobalReceiver
-        })
+            if (XenonPacketHandler.handlePacket(xenon.client, packet))
+                return@registerGlobalReceiver
+            if (editor != null && ForkliftPacketHandler.handlePacket(editor, packet))
+                return@registerGlobalReceiver
+        }
     }
 
 }

@@ -58,7 +58,7 @@ class ShapesCommand : BasicCommand {
                 PolygonShape(
                     "polygon_" + UUID.randomUUID(),
                     pyramidApex,
-                    PolygonShapeProperties(Color.WHITE, polygonPoints),
+                    PolygonShapeProperties(Color.WHITE, polygonPoints, visibleThroughWalls = true),
                     textLines = listOf(
                         "{\"text\": \"Polygon\", \"color\":\"light_purple\"}"
                     )

@@ -7,64 +7,84 @@ import java.util.*
 
 class EditorDragHandler(private val client: IGameClient) {
 
-    private var _originMouseX: Double = 0.0
-    private var _originMouseY: Double = 0.0
-    private var _lastMouseX: Double = 0.0
-    private var _lastMouseY: Double = 0.0
+    private var accumulatedDragDeltaX: Double = 0.0
+    private var accumulatedDragDeltaY: Double = 0.0
+    private var dragStartMouseX: Double = 0.0
+    private var dragStartMouseY: Double = 0.0
 
     fun isActive(): Boolean {
-        return _isDragActive
+        return isDragActive
     }
 
     @Synchronized
     fun reset() {
-        _isDragActive = false
+        isDragActive = false
     }
 
     @Synchronized
     fun exitDragMode() {
-        if (!_isDragActive) return
-        _isDragActive = false
+        if (!isDragActive) return
+        isDragActive = false
         client.sendPacket(ServerboundReleaseGizmoPacket())
     }
 
     /**
-     * Returns the mouse movement delta since the last call was made.
+     * Returns the total mouse movement delta since the last time [enableDragMode] was called.
      *
-     * @param newX The new mouse X position.
-     * @param newY The new mouse Y position.
+     * @param relX Movement delta on the X axis.
+     * @param relY Movement delta on the Y axis.
      * @return The mouse movement delta.
      */
     @Synchronized
-    fun getMouseMovementDelta(newX: Double, newY: Double): Vector2d {
-        if (!_isDragActive) return Vector2d()
+    fun getDragMouseDelta(relX: Double, relY: Double): Vector2d {
+        if (!isDragActive) return Vector2d()
 
-        val deltaX: Double = newX - _originMouseX
-        val deltaY: Double = newY - _originMouseY
+        accumulatedDragDeltaX += relX
+        accumulatedDragDeltaY += relY
 
-        _originMouseX = newX
-        _originMouseY = newY
+        return Vector2d(
+            dragStartMouseX + accumulatedDragDeltaX,
+            dragStartMouseY + accumulatedDragDeltaY
+        )
+    }
 
-        return Vector2d(deltaX, deltaY)
+    @Synchronized
+    fun getTotalDragDelta(): Vector2d {
+        if (!isDragActive) return Vector2d()
+        return Vector2d(
+            dragStartMouseX + accumulatedDragDeltaX,
+            dragStartMouseY + accumulatedDragDeltaY
+        )
+    }
+
+    @Synchronized
+    fun resetDragCenter() {
+        if (!isDragActive) return
+        val total = getTotalDragDelta()
+        dragStartMouseX = total.x
+        dragStartMouseY = total.y
+        accumulatedDragDeltaX = 0.0
+        accumulatedDragDeltaY = 0.0
     }
 
     @Synchronized
     fun enableDragMode(gizmo: UUID) {
-        if (_isDragActive) return
-        _isDragActive = true
+        if (isDragActive) return
+        isDragActive = true
 
         val mousePos = client.getMousePosition()
-        _originMouseX = mousePos.x
-        _originMouseY = mousePos.y
-        _lastMouseX = _originMouseX
-        _lastMouseY = _originMouseY
+        dragStartMouseX = mousePos.x
+        dragStartMouseY = mousePos.y
+        accumulatedDragDeltaX = 0.0
+        accumulatedDragDeltaY = 0.0
 
         client.sendPacket(ServerboundRequestGizmoPacket(gizmo))
     }
 
     fun getMousePositionBeforeDrag(): Vector2d {
-        return Vector2d(_originMouseX, _originMouseY)
+        return Vector2d(dragStartMouseX, dragStartMouseY)
     }
 
-    private var _isDragActive = false
+    private var isDragActive = false
+
 }
