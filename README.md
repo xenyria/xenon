@@ -1,10 +1,12 @@
 > [!WARNING]
-> This project is still heavily work in progress at the moment. Expect a lot of breaking changes and incomplete features.
+> This project is still heavily work in progress at the moment and **not** recommended for production use. Expect a lot
+of breaking changes and incomplete features.
 
 # Xenon
 
 This repository contains the official Fabric mod for the Xenyria Minecraft Server.
-Xenon is designed to enhance the gameplay experience on the Xenyria server by adding various quality-of-life features and improvements.
+Xenon is designed to enhance the gameplay experience on the Xenyria server by adding various quality-of-life features
+and improvements.
 
 You can join our Server on `play.xenyria.net`.
 
@@ -12,16 +14,19 @@ You can join our Server on `play.xenyria.net`.
 
 - Adds a custom Discord Rich Presence to the game.
 - Adds automatic camera switching for PaintSquad.
-- Level editor functionality for Xenyria Sandbox (Debug shape rendering, Gizmos to manipulate translation, scale and rotation of game objects).
+- Level editor functionality for Xenyria Sandbox (Debug shape rendering, Gizmos to manipulate translation, scale and
+  rotation of game objects).
 
-Although this mod is mainly focused on improving the experience on the Xenyria server, it can also be used on other servers.
+Although this mod is mainly focused on improving the experience on the Xenyria server, it can also be used on other
+servers.
 
 ## Project Structure
 
 - `core`: Contains shared code that is used by both the client and server. (packets, utilities & common logic)
 - `client`: Contains client-specific code, such as debug rendering and editor functionality.
 - `mod`: Contains the Fabric mod implementation for the client.
-- `demo-server`: Contains a simple Paper plugin that demonstrates how to use the core module on the server side. (requires packetevents)
+- `demo-server`: Contains a simple Paper plugin that demonstrates how to use the core module on the server side.
+  (requires packetevents)
 
 ## Maven Repository
 
