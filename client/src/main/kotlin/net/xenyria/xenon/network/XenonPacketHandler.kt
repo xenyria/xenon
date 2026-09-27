@@ -1,6 +1,6 @@
 package net.xenyria.xenon.forklift.network
 
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.game.IGameClient
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.clientbound.camera.ClientboundSetCameraPerspectivePacket
 import net.xenyria.xenon.protocol.clientbound.camera.ClientboundUpdateCameraLockPacket

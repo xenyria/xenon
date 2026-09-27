@@ -6,6 +6,9 @@ import net.xenyria.xenon.protocol.XenonPacketRegistry
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
+/**
+ * Packet sent by the server to update the Discord activity of the player.
+ */
 class ClientboundUpdateActivityPacket() : IXenonPacket(XenonPacketRegistry.CLIENTBOUND_UPDATE_ACTIVITY) {
 
     constructor(activityData: ActivityData) : this() {

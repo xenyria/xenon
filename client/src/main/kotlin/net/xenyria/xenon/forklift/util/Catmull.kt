@@ -5,6 +5,10 @@ import org.joml.Vector3dc
 
 const val CATMULL_BASE: Double = 0.5
 
+/**
+ * Helper class for performing Catmull Rom spline interpolation between four points.
+ * (See https://en.wikipedia.org/wiki/Catmull%E2%80%93Rom_spline)
+ */
 class Catmull private constructor(prev: Vector3dc, from: Vector3dc, to: Vector3dc, next: Vector3dc) {
 
     private val points: List<Vector3dc> = listOf(prev, from, to, next)
@@ -23,9 +27,9 @@ class Catmull private constructor(prev: Vector3dc, from: Vector3dc, to: Vector3d
          * Interpolates a single point
          */
         private fun q(t: Double, p0: Double, p1: Double, p2: Double, p3: Double): Double {
-            return CATMULL_BASE * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * (t * t) + ((-p0 + 3 * p1 - 3
-                    * p2 + p3)
-                    * (t * t * t)))
+            return CATMULL_BASE * ((2 * p1) + (-p0 + p2)
+                    * t + (2 * p0 - 5 * p1 + 4 * p2 - p3)
+                    * (t * t) + ((-p0 + 3 * p1 - 3 * p2 + p3) * (t * t * t)))
         }
 
         /**

@@ -1,21 +1,21 @@
 package net.xenyria.xenon.forklift
 
-import net.xenyria.xenon.forklift.editor.Editor
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.EditorClientState
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 
 /**
- * Main class for the map editor features provided by Xenon (formerly known as Forklift)
+ * Main class for the level editor features provided by Xenon, more commonly referred to as "Forklift".
  */
-class Forklift(val client: IGameClient) {
+class Forklift(client: IEditorGameClient) {
 
-    val editor = Editor(client)
+    val editorClient = EditorClientState(client)
 
     fun onTick() {
-        editor.onTick()
+        editorClient.onTick()
     }
 
     fun reset() {
-        editor.reset()
+        editorClient.reset()
     }
 
 }

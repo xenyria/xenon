@@ -8,8 +8,10 @@ import net.minecraft.network.chat.ComponentSerialization
 import net.xenyria.xenon.message.Message
 import java.awt.Color
 
+/**
+ * Helpers for working with text components and messages.
+ */
 private val gson = Gson()
-
 private val errorComponent = Component.literal("<Error>").apply {
     style = style.withColor(Color.RED.rgb)
 }

@@ -1,10 +1,9 @@
+@file:Suppress("unused")
+
 package net.xenyria.xenon.shape
 
 import net.openhft.hashing.LongHashFunction
-import net.xenyria.xenon.core.readVarInt
-import net.xenyria.xenon.core.readVec3F
-import net.xenyria.xenon.core.writeVarInt
-import net.xenyria.xenon.core.writeVec3F
+import net.xenyria.xenon.core.*
 import org.joml.Vector3dc
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -27,12 +26,10 @@ abstract class IEditorShape<PropertiesType : IEditorShapeProperties>(
         this.textLines = textLines.toList()
     }
 
-    val id: String
-        get() = _id
+    val id: String get() = _id
     private lateinit var _id: String
 
-    val group: String
-        get() = _group
+    val group: String get() = _group
     private lateinit var _group: String
 
     var properties: PropertiesType = properties
@@ -61,24 +58,24 @@ abstract class IEditorShape<PropertiesType : IEditorShapeProperties>(
         }
 
     fun deserialize(input: DataInputStream) {
-        _id = input.readUTF()
+        _id = input.readString()
         _position = input.readVec3F()
-        _group = input.readUTF()
+        _group = input.readString()
 
         val lineCount = input.readVarInt()
         val linesList = ArrayList<String>()
-        repeat(lineCount) { linesList.add(input.readUTF()) }
+        repeat(lineCount) { linesList.add(input.readString()) }
         textLines = linesList
         properties.readFromStream(input)
     }
 
     fun serialize(output: DataOutputStream) {
-        output.writeUTF(id)
+        output.writeString(id)
         output.writeVec3F(position)
-        output.writeUTF(group)
+        output.writeString(group)
 
         output.writeVarInt(textLines.size)
-        textLines.forEach { output.writeUTF(it) }
+        textLines.forEach { output.writeString(it) }
         properties.writeToStream(output)
     }
 

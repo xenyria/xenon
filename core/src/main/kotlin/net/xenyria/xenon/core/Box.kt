@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.xenyria.xenon.core
 
 import org.joml.Vector3d
@@ -37,6 +39,9 @@ fun makeCenteredBox(position: Vector3dc, width: Double, height: Double): Box {
     )
 }
 
+/**
+ * 3D axis-aligned box defined by two points (min and max).
+ */
 class Box {
 
     val dimensions: Vector3d get() = Vector3d(sizeX, sizeY, sizeZ)

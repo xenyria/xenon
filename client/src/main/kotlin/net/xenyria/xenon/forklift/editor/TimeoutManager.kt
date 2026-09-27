@@ -3,56 +3,65 @@ package net.xenyria.xenon.forklift.editor
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+/**
+ * Manages timeouts of requests.
+ * Requests are identified by a unique string ID.
+ * If no call to [removeTimeout] is made in time, the provided "onExpire" callback is called.
+ */
 class TimeoutManager {
 
-    data class Request(val id: String, val callback: () -> Unit, val requestTime: Long = System.currentTimeMillis())
+    private data class Request(
+        val id: String,
+        val onExpire: () -> Unit,
+        val requestTime: Long = System.currentTimeMillis()
+    )
+
+    private val requests: MutableList<Request> = ArrayList()
+    private val requestLock = ReentrantLock()
 
     fun removeTimeout(id: String) {
-        _requestLock.withLock {
-            val iterator = _requests.iterator()
+        requestLock.withLock {
+            val iterator = requests.iterator()
             while (iterator.hasNext()) {
                 val request = iterator.next()
-                if (request.id == id) {
-                    iterator.remove()
-                }
+                if (request.id == id) iterator.remove()
             }
         }
     }
 
-    private val _requests: MutableList<Request> = ArrayList<Request>()
-    private val _requestLock = ReentrantLock()
-
+    /**
+     * Adds a timeout to the timeout manager.
+     * If a timeout with the same ID already exists, false is returned.
+     */
     fun addTimeout(
         id: String,
         onTimeout: () -> Unit
     ): Boolean {
-        _requestLock.withLock {
-            if (_requests.find { it.id == id } != null) return false
+        requestLock.withLock {
+            if (requests.find { it.id == id } != null) return false
             val request = Request(id, onTimeout)
-            _requests.add(request)
+            requests.add(request)
             return true
         }
     }
 
     fun cancelAllRequests() {
         try {
-            _requestLock.lock()
-            for (request in _requests) {
-                request.callback()
-            }
-            _requests.clear()
+            requestLock.lock()
+            for ((_, callback) in requests) callback()
+            requests.clear()
         } finally {
-            _requestLock.unlock()
+            requestLock.unlock()
         }
     }
 
     fun timeoutExpiredRequests() {
-        _requestLock.withLock {
-            val iterator = _requests.iterator()
+        requestLock.withLock {
+            val iterator = requests.iterator()
             while (iterator.hasNext()) {
                 val request = iterator.next()
                 if (System.currentTimeMillis() - request.requestTime > 1000 * 5) {
-                    request.callback()
+                    request.onExpire()
                     iterator.remove()
                 }
             }

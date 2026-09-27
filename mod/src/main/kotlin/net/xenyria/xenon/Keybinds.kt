@@ -7,8 +7,12 @@ import net.minecraft.client.KeyMapping
 import net.minecraft.client.KeyMapping.Category
 import net.minecraft.client.Minecraft
 
+/**
+ * Keybinds for Xenon.
+ */
 object Keybinds {
 
+    // Keybind to request toggling edit mode.
     val TOGGLE_EDIT_MODE = KeyMappingHelper.registerKeyMapping(
         KeyMapping(
             "forklift_key_edit_mode",

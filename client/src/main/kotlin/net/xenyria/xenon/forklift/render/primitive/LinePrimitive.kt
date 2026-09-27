@@ -1,6 +1,6 @@
 package net.xenyria.xenon.forklift.render.primitive
 
-import net.xenyria.xenon.forklift.render.colorToFloat
+import net.xenyria.xenon.forklift.render.colorChannelIntToFactor
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.shape.Line
 import org.joml.Vector3d
@@ -13,11 +13,11 @@ class LinePrimitive(val line: Line) : IRenderPrimitive() {
         Line(from, to, width, color)
     )
 
-    override fun getVertices(): List<Vertex> {
-        val red = colorToFloat(line.color.red)
-        val green = colorToFloat(line.color.green)
-        val blue = colorToFloat(line.color.blue)
-        val alpha = colorToFloat(line.color.alpha)
+    override fun extractVertices(): List<Vertex> {
+        val red = colorChannelIntToFactor(line.color.red)
+        val green = colorChannelIntToFactor(line.color.green)
+        val blue = colorChannelIntToFactor(line.color.blue)
+        val alpha = colorChannelIntToFactor(line.color.alpha)
 
         val computedNormal = (Vector3d(line.to).sub(line.from)).normalize()
         return listOf(

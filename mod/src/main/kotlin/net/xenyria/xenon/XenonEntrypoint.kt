@@ -3,8 +3,14 @@ package net.xenyria.xenon
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.FabricLoader
 
+/**
+ * Main entry point for Xenon.
+ */
 object XenonEntrypoint : ModInitializer {
 
+    /**
+     * Helper function for obtaining the current mod version.
+     */
     private fun getVersion(): String {
         // Get the current mod version
         val modList = FabricLoader.getInstance().allMods
@@ -17,16 +23,5 @@ object XenonEntrypoint : ModInitializer {
 
     override fun onInitialize() {
         Xenon.create(getVersion())
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
-        //val discordAPI = DiscordAPI(1410669620297469952)
-        //discordAPI.start()
-        //discordAPI.activitySupplier = {
-        //    ActivityData(
-        //        details = ":3",
-        //        state = "meow"
-        //    )
-        //}
     }
 }

@@ -3,7 +3,7 @@ package net.xenyria.xenon.forklift.editor.state
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.editor.GizmoManipulator
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.state.GizmoRotationHelper.translateAxis
 import net.xenyria.xenon.forklift.editor.state.GizmoRotationHelper.translateAxisForControls
@@ -40,16 +40,6 @@ object GizmoRotationHelper {
         if (axis === Axis.Z) return Axis.Y
         if (axis === Axis.Y) return Axis.Z
         return axis
-    }
-
-    fun getVectorsForAxis(origin: Vector3dc, axis: Axis): List<CirclePoint> {
-        val resolution = 1.0
-        return when {
-            axis === Axis.X -> getCircleVectors(origin, ROTATION_GIZMO_RADIUS, 0f, true, resolution)
-            axis === Axis.Y -> getCircleVectors(origin, ROTATION_GIZMO_RADIUS, 0f, false, resolution)
-            axis === Axis.Z -> getCircleVectors(origin, ROTATION_GIZMO_RADIUS, 90f, true, resolution)
-            else -> emptyList()
-        }
     }
 
     fun getCircleVectors(
@@ -111,45 +101,52 @@ object GizmoRotationHelper {
 
 }
 
+/**
+ * Helper class for rotating objects in the editor.
+ */
+class GizmoRotator(
+    val editor: IEditorGameClient,
+    val target: IEditorTarget
+) {
 
-class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
+    private var rotationMode: IRotationMode? = null
 
-    private var _rotationMode: IRotationMode? = null
-    private var _previousCameraRotation = Vector3d()
-    private var _previousObjectRotation = Vector3d()
-    private var _previousLocalRotation = Vector3f()
-    private var _newLocalRotation = Vector3f()
+    // The previous & new rotation values. Used for calculating how much the object has rotated since the user
+    // started editing it.
+    private var previousObjectRotation = Vector3d()
+    private var previousLocalRotation = Vector3f()
+    private var newLocalRotation = Vector3f()
 
     fun resetSelectedAxis() {
         editingAxis = null
-        _rotationMode = null
+        rotationMode = null
     }
 
-    fun onMouseMove(game: IGameClient) {
+    fun onMouseMovement(game: IEditorGameClient) {
         val editingAxis = this.editingAxis
         if (editingAxis == null || !target.supportedRotationAxes.contains(editingAxis)) return
         val sensitivity = if (game.hasShiftDown()) ROTATION_FINE_SENSITIVITY else ROTATION_SENSITIVITY
 
         // Store previous mouse coordinates
-        val delta = GizmoManipulator.calculateGizmoDelta(
+        val delta = GizmoManipulator.calculateGizmoMovementDelta(
             game,
             translateAxisForControls(editingAxis),
             translateAxisForControls(editingAxis).positive, target
         )
 
         val displacement = delta.displacement * sensitivity
-        _rotationMode?.rotate(displacement, game.hasControlDown())
+        rotationMode?.rotate(displacement, game.hasControlDown())
     }
 
     fun shouldSnapRotation(): Boolean {
-        return game.hasControlDown()
+        return editor.hasControlDown()
     }
 
     fun getEffectiveRotation(): Vector3d {
-        return _rotationMode?.getEffectiveRotation(shouldSnapRotation()) ?: Vector3d()
+        return rotationMode?.getEffectiveRotation(shouldSnapRotation()) ?: Vector3d()
     }
 
-    fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
+    fun onMouseButtonEvent(event: MouseButtonEvent): GizmoInteractionResult {
         if (!event.isRightMouseButton) return GizmoInteractionResult.NONE
         if (event.isReleased) {
             reset()
@@ -159,24 +156,23 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
             this.editingAxis = editingAxis
             if (editingAxis == null) return GizmoInteractionResult.NONE
 
-            _previousObjectRotation = Vector3d(target.rotation)
-            _previousCameraRotation = Vector3d(game.getCamera().direction)
+            previousObjectRotation = Vector3d(target.rotation)
 
             val obb = GizmoRotationHelper.getSphereEditingBox(
                 target.position,
                 translateAxis(editingAxis)
             )
-            val camera = game.getCamera()
+            val camera = editor.getCamera()
             obb.intersection(camera.position, camera.direction) ?: return GizmoInteractionResult.NONE
 
-            _rotationMode = target.rotationMode.create(
+            rotationMode = target.rotationMode.create(
                 RotationModeParams(
                     target.rotation,
-                    game.forkliftConfig,
+                    editor.forkliftConfig,
                     editingAxis
                 ) { target.rotation = it }
             )
-            game.editor.enableDragMode(target.uuid)
+            editor.editorState.enableDragMode(target.uuid)
             return GizmoInteractionResult.START_EDIT
         }
         return GizmoInteractionResult.NONE
@@ -242,7 +238,7 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     }
 
     fun querySelectedAxis(): GizmoAxisIntersection? {
-        val (axis, distance) = querySelectedAxisPoint(game.getCamera()) ?: return null
+        val (axis, distance) = querySelectedAxisPoint(editor.getCamera()) ?: return null
         return GizmoAxisIntersection(distance, axis)
     }
 
@@ -252,18 +248,17 @@ class GizmoRotator(val game: IGameClient, val target: IEditorTarget) {
     private fun reset() {
         GizmoManipulator.reset()
         editingAxis = null
-        _previousCameraRotation.set(0.0)
-        _previousObjectRotation.set(0.0)
-        _previousLocalRotation.set(0.0)
-        _newLocalRotation.set(0.0)
+        previousObjectRotation.set(0.0)
+        previousLocalRotation.set(0.0)
+        newLocalRotation.set(0.0)
     }
 
     fun getPreviousRotation(editingAxis: Axis): Double {
-        return _rotationMode?.getPreviousRotation(editingAxis) ?: 0.0
+        return rotationMode?.getPreviousRotation(editingAxis) ?: 0.0
     }
 
     fun getNewRotation(editingAxis: Axis): Double {
-        return _rotationMode?.getNewRotation(editingAxis, shouldSnapRotation()) ?: 0.0
+        return rotationMode?.getNewRotation(editingAxis, shouldSnapRotation()) ?: 0.0
     }
 
 }

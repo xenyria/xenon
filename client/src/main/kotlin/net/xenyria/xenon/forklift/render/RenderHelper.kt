@@ -7,9 +7,17 @@ import java.awt.Color
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+/**
+ * Various helper functions for rendering.
+ */
+
+// The maximum value for an 8-bit color channel.
 const val MAX_COLOR_VALUE = 255.0f
 const val MAX_COLOR_CHANNEL_VALUE = 255
 
+/**
+ * Rounds the given vector to the nearest multiple of the given value.
+ */
 fun roundToNearestMultiple(vector: Vector3dc, multiple: Double): Vector3d {
     val x = (vector.x() / multiple).roundToInt() * multiple
     val y = (vector.y() / multiple).roundToInt() * multiple
@@ -17,6 +25,9 @@ fun roundToNearestMultiple(vector: Vector3dc, multiple: Double): Vector3d {
     return Vector3d(x, y, z)
 }
 
+/**
+ * Rounds the given vector to the nearest multiple of the given value along the specified axis.
+ */
 fun roundToNearestMultiple(vector: Vector3dc, multiple: Double, axis: Axis): Vector3d {
     var x = vector.x()
     var y = vector.y()
@@ -41,13 +52,13 @@ fun sinModifier(period: Number, min: Number): Double {
 /**
  * Converts the given color to a float value between 0 and 1.
  */
-fun colorToFloat(value: Int): Float {
+fun colorChannelIntToFactor(value: Int): Float {
     return (value / MAX_COLOR_VALUE).coerceIn(0.0F, 1.0F)
 }
 
 /**
- * Multiplies the given color by the given modifier. Assures that the resulting color is still valid. (all channels
- * are between 0 and 255)
+ * Multiplies the given color by the given modifier.
+ * Assures that the resulting color is still valid. (all channels are kept between 0 and 255)
  */
 fun multiplyColor(color: Color, mod: Double): Color {
     var newRed = (color.red * mod).toInt()

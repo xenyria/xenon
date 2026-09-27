@@ -3,6 +3,9 @@ package net.xenyria.xenon.core
 import org.joml.Vector3d
 import org.joml.Vector3dc
 
+/**
+ * Represents the six faces of a cube, each associated with a normal vector.
+ */
 enum class CubeFace(private val _normal: Vector3dc) {
     NORTH(Vector3d(0.0, 0.0, -1.0)),
     EAST(Vector3d(1.0, 0.0, 0.0)),

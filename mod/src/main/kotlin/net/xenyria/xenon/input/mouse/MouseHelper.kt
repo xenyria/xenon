@@ -5,7 +5,13 @@ import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent.MouseButton
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent.MouseButtonAction
 
-fun fromSDL(button: Int, action: Int, mods: Int): MouseButtonEvent {
+/**
+ * Constructs a mouse button event from the given SDL button and action codes.
+ */
+fun fromSDL(
+    button: Int,
+    action: Int
+): MouseButtonEvent {
     val mouseButton = when (button) {
         InputConstants.MOUSE_BUTTON_LEFT -> MouseButton.LEFT
         InputConstants.MOUSE_BUTTON_MIDDLE -> MouseButton.MIDDLE

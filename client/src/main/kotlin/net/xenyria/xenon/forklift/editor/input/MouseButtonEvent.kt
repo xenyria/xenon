@@ -5,6 +5,7 @@ package net.xenyria.xenon.forklift.editor.input
  * Represents a mouse button event.
  */
 class MouseButtonEvent(val button: MouseButton?, val action: MouseButtonAction?) {
+
     val isRightMouseButton: Boolean get() = button == MouseButton.RIGHT
     val isReleased: Boolean get() = action == MouseButtonAction.RELEASE
     val isPressed: Boolean get() = action == MouseButtonAction.PRESS

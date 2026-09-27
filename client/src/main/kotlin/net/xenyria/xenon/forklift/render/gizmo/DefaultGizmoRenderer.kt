@@ -2,7 +2,8 @@ package net.xenyria.xenon.forklift.render.gizmo
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.editor.state.AXIS_TIP_SIZE
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.multiplyColor
 import net.xenyria.xenon.forklift.render.primitive.BoxPrimitive
 import net.xenyria.xenon.forklift.render.primitive.ConePrimitive
@@ -13,30 +14,28 @@ import org.joml.Vector3dc
 import java.awt.Color
 
 const val MAX_TIP_LENGTH = 0.08
-const val TIP_SIZE = 0.002
-const val TIP_BOUNDING_BOX_BASE_SIZE = 0.005
-const val AXIS_TIP_SIZE = 0.15
 const val AXIS_TIP_RADIUS = 0.065
 const val AXIS_EDIT_ALPHA = 32
 
-const val AXIS_HIGHLIGHT_PERIOD = 100
-const val AXIS_HOVER_MIN_BRIGHTNESS = 0.5
-const val AXIS_HOVER_HIGHLIGHT_MIN_VALUE = AXIS_HOVER_MIN_BRIGHTNESS
-const val AXIS_SELECTED_HIGHLIGHT_MIN_VALUE = 0.75
-const val AXIS_SELECTED_MIN_BRIGHTNESS = 1.5
+const val AXIS_HIGHLIGHT_PERIOD = 100 // Time in millis for a full sine wave cycle for the axis highlight effect
+const val AXIS_HOVER_MIN_BRIGHTNESS = 0.5 // Minimum brightness multiplier for the axis highlight effect when hovered
+const val AXIS_HOVER_HIGHLIGHT_MIN_VALUE = 0.5 // Boundary value for the sine wave modifier
 
-enum class AxisRenderType {
-    CONE, // Translation
-    BOX // Scale
+/**
+ * Enum representing the different types of axis tips that can be rendered for a gizmo.
+ */
+enum class AxisTipType {
+    CONE, BOX
 }
 
+/**
+ * Returns the color for the given axis and editing state.
+ * Selected axes use a sine wave modifier to create a pulsing effect. (which is turned off when editing)
+ */
 fun getAxisEditorColor(axis: Axis, isSelected: Boolean, isEditing: Boolean): Color {
     val color = requireNotNull(getAxisColor(axis))
     if (isSelected) {
-        val mod = AXIS_HOVER_MIN_BRIGHTNESS + sinModifier(
-            AXIS_HIGHLIGHT_PERIOD,
-            AXIS_HOVER_HIGHLIGHT_MIN_VALUE
-        )
+        val mod = AXIS_HOVER_MIN_BRIGHTNESS + sinModifier(AXIS_HIGHLIGHT_PERIOD, AXIS_HOVER_HIGHLIGHT_MIN_VALUE)
         return multiplyColor(color, mod)
     }
     if (isEditing) {
@@ -47,13 +46,18 @@ fun getAxisEditorColor(axis: Axis, isSelected: Boolean, isEditing: Boolean): Col
     }
 }
 
+/**
+ * Helper functions for rendering gizmos in the editor.
+ */
 object DefaultGizmoRenderer {
 
+    /**
+     * Renders a box at the end of the axis to represent the tip of the gizmo.
+     */
     fun drawAxisBox(
-        renderer: IGameRenderer,
+        renderer: IGameRenderContext,
         origin: Vector3dc,
         direction: Vector3dc,
-        axis: Axis,
         color: Color,
         axisRotation: Vector3dc
     ) {
@@ -64,8 +68,11 @@ object DefaultGizmoRenderer {
         renderer.drawPrimitives(listOf(BoxPrimitive(box, color, axisRotation)), true)
     }
 
+    /**
+     * Renders a cone at the end of the axis to represent the tip of the gizmo.
+     */
     private fun drawAxisCone(
-        renderer: IGameRenderer,
+        renderer: IGameRenderContext,
         position: Vector3dc,
         direction: Vector3dc,
         color: Color
@@ -78,10 +85,14 @@ object DefaultGizmoRenderer {
         )
     }
 
+    /**
+     * Draws a gizmo with the given parameters.
+     * The gizmo consists of one line per axis + an optional tip at the end of each axis.
+     */
     fun drawGizmo(
-        renderer: IGameRenderer, selectedAxis: Axis?, hoveredAxis: Axis?,
+        renderer: IGameRenderContext, selectedAxis: Axis?, hoveredAxis: Axis?,
         position: Vector3dc, rotation: Vector3dc,
-        axisRenderType: AxisRenderType? = null,
+        axisTip: AxisTipType? = null,
         transparent: Boolean
     ) {
         for (axis in Axis.entries) {
@@ -93,14 +104,13 @@ object DefaultGizmoRenderer {
             val direction = deltaOf(origin, end)
 
             renderer.drawPrimitives(listOf(LinePrimitive(origin, end, color, 8.0F)), true)
-            if (axisRenderType != null) {
-                when (axisRenderType) {
-                    AxisRenderType.CONE -> drawAxisCone(renderer, position, direction, color)
-                    AxisRenderType.BOX -> drawAxisBox(renderer, origin, direction, axis, color, rotation)
+            if (axisTip != null) {
+                when (axisTip) {
+                    AxisTipType.CONE -> drawAxisCone(renderer, position, direction, color)
+                    AxisTipType.BOX -> drawAxisBox(renderer, origin, direction, color, rotation)
                 }
             }
         }
-
     }
 
 }

@@ -1,5 +1,7 @@
 package net.xenyria.xenon.forklift.config
 
+import net.xenyria.xenon.core.readVarInt
+import net.xenyria.xenon.core.writeVarInt
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -7,6 +9,9 @@ import java.io.DataOutputStream
 
 const val CONFIG_FORMAT_VERSION = 1
 
+/**
+ * Configuration class for the level editor (Forklift) in Xenon.
+ */
 class ForkliftConfig(
     translationGridSnap: Double = 0.1,
     scaleGridSnap: Double = 0.1,
@@ -40,28 +45,30 @@ class ForkliftConfig(
         result = 31 * result + rotationGridSnap.hashCode()
         return result
     }
-}
 
-fun serializeConfig(input: ForkliftConfig): ByteArray {
-    val output = ByteArrayOutputStream()
-    val stream = DataOutputStream(output)
-    stream.writeInt(CONFIG_FORMAT_VERSION)
-    stream.writeDouble(input.translationGridSnap)
-    stream.writeDouble(input.scaleGridSnap)
-    stream.writeDouble(input.rotationGridSnap)
-    return output.toByteArray()
-}
+    companion object {
+        fun serializeConfig(input: ForkliftConfig): ByteArray {
+            val output = ByteArrayOutputStream()
+            val stream = DataOutputStream(output)
+            stream.writeVarInt(CONFIG_FORMAT_VERSION)
+            stream.writeDouble(input.translationGridSnap)
+            stream.writeDouble(input.scaleGridSnap)
+            stream.writeDouble(input.rotationGridSnap)
+            return output.toByteArray()
+        }
 
-fun deserializeConfig(input: ByteArray): Result<ForkliftConfig> {
-    return runCatching {
-        val reader = DataInputStream(ByteArrayInputStream(input))
-        val version = reader.readInt()
-        check(version == CONFIG_FORMAT_VERSION) { "Unsupported config version: $version" }
+        fun deserializeConfig(input: ByteArray): Result<ForkliftConfig> {
+            return runCatching {
+                val reader = DataInputStream(ByteArrayInputStream(input))
+                val version = reader.readVarInt()
+                check(version == CONFIG_FORMAT_VERSION) { "Unsupported config version: $version" }
 
-        ForkliftConfig(
-            translationGridSnap = reader.readDouble(),
-            scaleGridSnap = reader.readDouble(),
-            rotationGridSnap = reader.readDouble()
-        )
+                ForkliftConfig(
+                    translationGridSnap = reader.readDouble(),
+                    scaleGridSnap = reader.readDouble(),
+                    rotationGridSnap = reader.readDouble()
+                )
+            }
+        }
     }
 }

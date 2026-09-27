@@ -9,6 +9,9 @@ import org.joml.Quaternionf
 import org.joml.Vector3d
 import org.joml.Vector3f
 
+/**
+ * Helper function for creating a rotation mode instance based on the specified rotation mode and parameters.
+ */
 fun RotationMode.create(params: RotationModeParams): IRotationMode {
     return when (this) {
         RotationMode.EULER -> EulerRotationMode(params)
@@ -16,13 +19,17 @@ fun RotationMode.create(params: RotationModeParams): IRotationMode {
     }
 }
 
+/**
+ * Data class representing the parameters required for creating a rotation mode instance.
+ */
 data class RotationModeParams(
-    val initialRotation: Vector3d,
-    val config: ForkliftConfig,
-    val axis: Axis,
-    val updateRotation: (Vector3d) -> Unit
+    val initialRotation: Vector3d, val config: ForkliftConfig,
+    val axis: Axis, val updateRotation: (Vector3d) -> Unit
 )
 
+/**
+ * Abstract class representing a rotation mode for an object in the editor.
+ */
 abstract class IRotationMode(params: RotationModeParams) {
 
     protected val config: ForkliftConfig = params.config
@@ -45,24 +52,34 @@ abstract class IRotationMode(params: RotationModeParams) {
         return getVectorComponent(axis, getEffectiveNewLocalRotation(snapToNearest)).toDouble()
     }
 
-    fun getEffectiveRotation(snapToNearest: Boolean): Vector3d {
-        return Vector3d(getEffectiveNewLocalRotation(snapToNearest)).sub(previousObjectRotation)
+    open fun getEffectiveRotation(snapToNearest: Boolean): Vector3d {
+        return Vector3d(getEffectiveNewLocalRotation(snapToNearest)).sub(previousObjectRotation).mul(Vector3d(-1.0))
     }
 
     abstract fun getEffectiveNewLocalRotation(snapToNearest: Boolean): Vector3f
 }
 
+/**
+ * Yaw & Pitch rotation mode implementation, intended to be used for regular entities / NPCs.
+ */
 class YawPitchRotationMode(params: RotationModeParams) : IRotationMode(params) {
+
     override val mode: RotationMode = RotationMode.YAW_PITCH
-    private var _newLocalRotation = Vector3f(params.initialRotation)
+    private var newLocalRotation = Vector3f(params.initialRotation)
+
+    override fun getEffectiveRotation(snapToNearest: Boolean): Vector3d {
+        val delta = super.getEffectiveRotation(snapToNearest)
+        delta.x *= -1.0
+        return delta
+    }
 
     override fun rotate(displacement: Double, snapToNearest: Boolean) {
         if (axis == Axis.X) {
-            _newLocalRotation.x += displacement.toFloat()
+            newLocalRotation.x += displacement.toFloat()
         } else if (axis == Axis.Y) {
-            _newLocalRotation.y -= displacement.toFloat()
+            newLocalRotation.y -= displacement.toFloat()
         }
-        val rotation = Vector3d(_newLocalRotation)
+        val rotation = Vector3d(newLocalRotation)
         if (snapToNearest)
             rotation.set(roundToNearestMultiple(Vector3d(rotation), getSnapValue(), axis))
         updateRotation(rotation)
@@ -70,21 +87,25 @@ class YawPitchRotationMode(params: RotationModeParams) : IRotationMode(params) {
     }
 
     override fun getEffectiveNewLocalRotation(snapToNearest: Boolean): Vector3f {
-        var rotation = Vector3d(_newLocalRotation)
+        var rotation = Vector3d(newLocalRotation)
         if (snapToNearest)
             rotation = Vector3d(roundToNearestMultiple(rotation, getSnapValue(), axis))
         return Vector3f(rotation.x.toFloat(), -rotation.y.toFloat(), rotation.z.toFloat())
     }
-
 }
 
+/**
+ * Euler rotation mode implementation, intended to be used for display entities.
+ */
 class EulerRotationMode(params: RotationModeParams) : IRotationMode(params) {
 
-    private var _quaternion: Quaternionf = Quaternionf()
-    private var _newLocalRotation = Vector3f(params.initialRotation)
+    override val mode: RotationMode = RotationMode.EULER
+
+    private var quaternion: Quaternionf = Quaternionf()
+    private var newLocalRotation = Vector3f(params.initialRotation)
 
     override fun getEffectiveNewLocalRotation(snapToNearest: Boolean): Vector3f {
-        var rotation = Vector3d(_newLocalRotation)
+        var rotation = Vector3d(newLocalRotation)
         if (snapToNearest)
             rotation = Vector3d(roundToNearestMultiple(rotation, getSnapValue(), axis))
         return Vector3f(rotation.x.toFloat(), rotation.y.toFloat(), rotation.z.toFloat())
@@ -92,27 +113,27 @@ class EulerRotationMode(params: RotationModeParams) : IRotationMode(params) {
 
     override fun rotate(displacement: Double, snapToNearest: Boolean) {
         var displacement = displacement
-        if (axis == Axis.X) displacement *= -1.0F
+        if (axis == Axis.Z) displacement *= -1.0F
 
         when (axis) {
             Axis.X -> {
-                _quaternion.rotateLocalX(Math.toRadians(displacement).toFloat())
-                _newLocalRotation.add(displacement.toFloat(), 0.0F, 0.0F)
+                quaternion.rotateLocalX(Math.toRadians(displacement).toFloat())
+                newLocalRotation.add(displacement.toFloat(), 0.0F, 0.0F)
             }
 
             Axis.Y -> {
-                _quaternion.rotateLocalY(Math.toRadians(displacement).toFloat())
-                _newLocalRotation.add(0.0F, displacement.toFloat(), 0.0F)
+                quaternion.rotateLocalY(Math.toRadians(displacement).toFloat())
+                newLocalRotation.add(0.0F, displacement.toFloat(), 0.0F)
             }
 
             Axis.Z -> {
-                _quaternion.rotateLocalZ(Math.toRadians(displacement).toFloat())
-                _newLocalRotation.add(0.0F, 0.0F, displacement.toFloat())
+                quaternion.rotateLocalZ(Math.toRadians(displacement).toFloat())
+                newLocalRotation.add(0.0F, 0.0F, displacement.toFloat())
             }
         }
 
         val buffer = Vector3f()
-        _quaternion.getEulerAnglesYXZ(buffer)
+        quaternion.getEulerAnglesYXZ(buffer)
 
         var degrees = Vector3d(
             Math.toDegrees(buffer.x.toDouble()),
@@ -123,11 +144,9 @@ class EulerRotationMode(params: RotationModeParams) : IRotationMode(params) {
         updateRotation(degrees)
     }
 
-    override val mode: RotationMode = RotationMode.EULER
-
     init {
-        _quaternion.rotateY(Math.toRadians(params.initialRotation.y).toFloat())
-        _quaternion.rotateX(Math.toRadians(params.initialRotation.x).toFloat())
-        _quaternion.rotateZ(Math.toRadians(params.initialRotation.z).toFloat())
+        quaternion.rotateY(Math.toRadians(params.initialRotation.y).toFloat())
+        quaternion.rotateX(Math.toRadians(params.initialRotation.x).toFloat())
+        quaternion.rotateZ(Math.toRadians(params.initialRotation.z).toFloat())
     }
 }

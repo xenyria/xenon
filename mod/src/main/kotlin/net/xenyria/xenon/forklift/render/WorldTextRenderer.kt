@@ -12,6 +12,9 @@ import java.awt.Color
 
 private const val DEFAULT_TEXT_SCALE = 1.0F / 48.0F
 
+/**
+ * Helper class for rendering text in the world.
+ */
 class WorldTextRenderer(val context: LevelRenderContext) {
 
     private val camera: Vec3 = context.levelState().cameraRenderState.pos

@@ -3,6 +3,8 @@
  * Unauthorized copying or redistribution of this file in source and binary forms via any medium
  * is strictly prohibited.
  */
+@file:Suppress("unused")
+
 package net.xenyria.xenon.core
 
 import org.joml.Vector3d
@@ -16,26 +18,16 @@ import kotlin.math.abs
 class OBB(position: Vector3dc, sizeX: Double, sizeY: Double, sizeZ: Double) {
 
     // Center of the bounding box
-    private val center: Vector3dc
+    private val center: Vector3dc = Vector3d(position)
 
     // Each axis of the bounding box
     private var axisX: Vector3dc = DEFAULT_AXIS_X
     private var axisY: Vector3dc = DEFAULT_AXIS_Y
     private var axisZ: Vector3dc = DEFAULT_AXIS_Z
 
-    var halfSizeX: Double
-    var halfSizeY: Double
-    var halfSizeZ: Double
-
-    /**
-     * Constructor
-     */
-    init {
-        this.center = Vector3d(position)
-        this.halfSizeX = sizeX / CENTER_DIVIDER
-        this.halfSizeY = sizeY / CENTER_DIVIDER
-        this.halfSizeZ = sizeZ / CENTER_DIVIDER
-    }
+    var halfSizeX: Double = sizeX / CENTER_DIVIDER
+    var halfSizeY: Double = sizeY / CENTER_DIVIDER
+    var halfSizeZ: Double = sizeZ / CENTER_DIVIDER
 
     /**
      * Returns a point relative to the center of the bounding box, based on the rotation of the box.
@@ -150,7 +142,12 @@ class OBB(position: Vector3dc, sizeX: Double, sizeY: Double, sizeZ: Double) {
         }
 
         private fun getSeparatingPlane(rpos: Vector3dc, plane: Vector3dc, box1: OBB, box2: OBB): Boolean {
-            return (abs(dotProduct(rpos, plane)) > (abs(dotProduct((Vector3d(box1.axisX).mul(box1.halfSizeX)), plane)) + abs(
+            return (abs(dotProduct(rpos, plane)) > (abs(
+                dotProduct(
+                    (Vector3d(box1.axisX).mul(box1.halfSizeX)),
+                    plane
+                )
+            ) + abs(
                 dotProduct(
                     (Vector3d(box1.axisY).mul(box1.halfSizeY)), plane
                 )

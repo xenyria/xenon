@@ -30,7 +30,7 @@ class KeyboardManager(windowId: Long) {
         }
 
         val forklift = xenon.getForkliftOrNull()
-        if (forklift != null && forklift.editor.isMouseLocked()) {
+        if (forklift != null && forklift.editorClient.isMouseLocked()) {
             if (action != KeyAction.UP) {
                 callbackInfo.cancel()
                 return
@@ -51,7 +51,7 @@ class KeyboardManager(windowId: Long) {
         if (numberKey != null) {
             // Mode selection update for Forklift
             val forklift = xenon.getForkliftOrNull() ?: return
-            forklift.editor.selectMode(numberKey)
+            forklift.editorClient.selectMode(numberKey)
         }
     }
 }

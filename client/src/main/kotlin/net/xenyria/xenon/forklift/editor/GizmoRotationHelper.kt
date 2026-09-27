@@ -9,6 +9,9 @@ import org.joml.Vector3dc
 import org.joml.Vector3f
 import java.lang.Math
 
+/**
+ * Helper functions for gizmo rotation and translation.
+ */
 object GizmoRotationHelper {
     fun translateGizmoPosition(origin: Vector3dc, axis: Axis, rotation: Vector3dc): Vector3d {
         val matrix = Matrix4f()

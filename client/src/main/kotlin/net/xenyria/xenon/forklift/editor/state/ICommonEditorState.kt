@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package net.xenyria.xenon.forklift.editor.state
 
 import net.xenyria.xenon.core.Axis
@@ -5,46 +7,50 @@ import net.xenyria.xenon.core.OBB
 import net.xenyria.xenon.core.directionOf
 import net.xenyria.xenon.forklift.editor.GizmoManipulator
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.render.IGameRenderer
-import net.xenyria.xenon.forklift.render.gizmo.AXIS_TIP_SIZE
-import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
+import net.xenyria.xenon.forklift.render.IGameRenderContext
+import net.xenyria.xenon.forklift.render.gizmo.AxisTipType
 import net.xenyria.xenon.forklift.render.gizmo.DefaultGizmoRenderer
 import org.joml.*
 import java.awt.Color
 
 val MODIFIERS_COLOR = Color(232, 169, 51)
-const val VISUAL_AXIS_SIZE_MODIFIER = 0.1
-const val AXIS_INTERACTION_SIZE = 7.0
+
+// Length of the axis line (not including the tip/arrow)
 const val AXIS_LINE_LENGTH = 1.0
-const val EDIT_AXIS_LENGTH = 64.0
-const val AXIS_INTERACTION_RANGE = 7.0
+
+// Size of the axis arrow (= tip)
+const val AXIS_TIP_SIZE = 0.15
 
 private data class EditingSession(val axis: Axis)
 
-abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {
+/**
+ * Common base class for editor states that manipulate a target's position or scale.
+ * For rotation, see [net.xenyria.xenon.forklift.editor.state.rotate.RotateState].
+ */
+abstract class IEditorCommonState(client: IEditorGameClient, target: IEditorTarget) : IEditorState(client, target) {
 
     private val gizmoManipulator = GizmoManipulator
+    private var editingSession: EditingSession? = null
 
     // Previous position & scale before the edit was requested
     protected var previousPosition: Vector3dc? = null
     protected var previousScale: Vector3dc? = null
 
-    private var _editingSession: EditingSession? = null
+    abstract val renderAxisType: AxisTipType
 
-    abstract val renderAxisType: AxisRenderType
-
+    // Determines whether the gizmo should be rendered with its rotation applied.
     abstract fun shouldRotateGizmo(): Boolean
 
     @Synchronized
-    override fun handleMouseMovement(movement: Vector2d) {
-        val session = _editingSession ?: return
+    override fun onMouseMovement(movement: Vector2d) {
+        val session = editingSession ?: return
         val (start, end) = getAxisLine(session.axis)
 
         val direction = directionOf(start, end)
-        val delta = gizmoManipulator.calculateGizmoDelta(game, session.axis, direction, target)
+        val delta = gizmoManipulator.calculateGizmoMovementDelta(client, session.axis, direction, target)
         moveByDelta(delta.axis, delta.displacement)
     }
 
@@ -54,20 +60,20 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
     abstract fun moveByDelta(axis: Axis, displacement: Double)
 
     @Synchronized
-    override fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
+    override fun onMouseButtonEvent(event: MouseButtonEvent): GizmoInteractionResult {
         if (!event.isRightMouseButton) return GizmoInteractionResult.NONE
         if (event.isReleased) {
-            _editingSession = null
+            editingSession = null
             gizmoManipulator.reset()
             return GizmoInteractionResult.END_EDIT
         } else if (event.isPressed) {
             val query = querySelectedAxis()
             if (query != null) {
-                _editingSession = EditingSession(query.axis)
+                editingSession = EditingSession(query.axis)
                 gizmoManipulator.reset()
                 previousPosition = Vector3d(target.position)
                 previousScale = Vector3d(target.scale)
-                game.editor.enableDragMode(target.uuid)
+                client.editorState.enableDragMode(target.uuid)
                 beginEdit()
                 return GizmoInteractionResult.START_EDIT
             }
@@ -111,7 +117,7 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             intersectables.add(axis to listOf(lineBox, tipBox))
         }
 
-        val camera = game.getCamera()
+        val camera = client.getCamera()
         val results = ArrayList<Pair<Axis, Double>>()
         for ((axis, boxes) in intersectables) {
             val axisResults = ArrayList<Double>()
@@ -145,18 +151,21 @@ abstract class IEditorCommonState(game: IGameClient, target: IEditorTarget) : IE
             matrix4f.getTranslation(output)
 
             val directionVector = Vector3d(output.x.toDouble(), output.y.toDouble(), output.z.toDouble()).normalize()
-            return Pair(position, Vector3d(position).add(directionVector.mul(AXIS_LINE_LENGTH + (AXIS_TIP_SIZE / 2.0))))
+            return Pair(
+                position,
+                Vector3d(position).add(directionVector.mul(AXIS_LINE_LENGTH + (AXIS_TIP_SIZE / 2.0)))
+            )
         }
     }
 
     @Synchronized
     protected fun getEditingAxis(): Axis? {
-        return _editingSession?.axis
+        return editingSession?.axis
     }
 
     @Synchronized
-    override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
-        if (!isSelected) _editingSession = null
+    override fun extract(renderer: IGameRenderContext, isSelected: Boolean, isTransparent: Boolean) {
+        if (!isSelected) editingSession = null
 
         var selectedAxis: Axis? = getSelectedAxis()
         val editingAxis = getEditingAxis()

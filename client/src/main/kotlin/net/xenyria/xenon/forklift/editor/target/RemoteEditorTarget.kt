@@ -3,14 +3,19 @@ package net.xenyria.xenon.forklift.editor.target
 import net.xenyria.xenon.core.Axis
 import net.xenyria.xenon.core.RotationMode
 import net.xenyria.xenon.forklift.editor.EditorMode
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import java.util.*
 
+/**
+ * Represents an editor target that lives on the server.
+ * Although we keep a copy of all the target's states, the server acts as the source of truth.
+ * Updating requires sending a [ServerboundUpdateGizmoPacket] to the server.
+ */
 class RemoteEditorTarget(
-    val client: IGameClient,
+    val client: IEditorGameClient,
     override val uuid: UUID,
     initialPosition: Vector3dc,
     initialRotation: Vector3dc,
@@ -21,6 +26,8 @@ class RemoteEditorTarget(
 ) : IEditorTarget {
 
     private fun emitUpdate() {
+        // Since editing a gizmo can end up causing a ton of updates every second, we debounce the updates to avoid
+        // spamming the server with packets.
         client.debounceGizmoPacket(ServerboundUpdateGizmoPacket(uuid, position, rotation, scale))
     }
 

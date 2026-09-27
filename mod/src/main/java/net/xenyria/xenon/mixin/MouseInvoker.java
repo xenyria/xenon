@@ -4,6 +4,7 @@ import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
+@SuppressWarnings("unused")
 @Mixin(MouseHandler.class)
 public interface MouseInvoker {
     @Accessor("xpos")

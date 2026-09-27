@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.render.shape
 
 import net.xenyria.xenon.core.Box
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.IShapeRenderer
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
 import net.xenyria.xenon.forklift.util.Catmull
@@ -13,13 +13,17 @@ import kotlin.math.min
 
 const val PATH_LINE_WIDTH = 4.0F
 
+/**
+ * Represents a path segment that can be interpolated using Catmull Rom splines.
+ */
 private data class InterpolatableSegment(
-    val previous: Vector3dc,
-    val from: Vector3dc,
-    val to: Vector3dc,
-    val next: Vector3dc
+    val previous: Vector3dc, val from: Vector3dc,
+    val to: Vector3dc, val next: Vector3dc
 )
 
+/**
+ * Renderer implementation for path shapes.
+ */
 object PathShapeRenderer : IShapeRenderer<PathShape> {
 
     private fun getSegments(points: List<Vector3dc>, open: Boolean): List<Pair<Vector3dc, Vector3dc>> {
@@ -35,7 +39,10 @@ object PathShapeRenderer : IShapeRenderer<PathShape> {
         return segments
     }
 
-    private fun toInterpolatableSegments(segments: List<Pair<Vector3dc, Vector3dc>>, open: Boolean): List<InterpolatableSegment> {
+    private fun toInterpolatableSegments(
+        segments: List<Pair<Vector3dc, Vector3dc>>,
+        open: Boolean
+    ): List<InterpolatableSegment> {
         val output = ArrayList<InterpolatableSegment>()
 
         fun getSegment(index: Int, wrapAround: Boolean): Pair<Vector3dc, Vector3dc>? {
@@ -65,15 +72,15 @@ object PathShapeRenderer : IShapeRenderer<PathShape> {
         return output
     }
 
-    override fun drawShape(renderer: IGameRenderer, shape: PathShape): Boolean {
+    override fun extract(renderer: IGameRenderContext, shape: PathShape): Boolean {
         runCatching {
             val lines = ArrayList<LinePrimitive>()
             val segments = getSegments(shape.properties.points, shape.properties.isOpen)
-            for (segment in toInterpolatableSegments(segments, shape.properties.isOpen)) {
-                val box = Box(segment.from, segment.to)
+            for ((previous, from, to, next) in toInterpolatableSegments(segments, shape.properties.isOpen)) {
+                val box = Box(from, to)
                 if (!renderer.isInCameraFrustum(box)) continue
 
-                val distance = segment.from.distance(segment.to)
+                val distance = from.distance(to)
                 val splitCount = min(8, max((distance * 16).toInt(), 32))
 
                 if (shape.properties.isSmooth) {
@@ -81,13 +88,13 @@ object PathShapeRenderer : IShapeRenderer<PathShape> {
                         generatePrimitives(
                             Catmull.interpolateSegment(
                                 splitCount, true,
-                                segment.previous, segment.from, segment.to, segment.next
+                                previous, from, to, next
                             ), shape.properties.color
                         )
                     )
                 } else {
                     lines.addAll(
-                        generatePrimitives(listOf(segment.from, segment.to), shape.properties.color)
+                        generatePrimitives(listOf(from, to), shape.properties.color)
                     )
                 }
             }

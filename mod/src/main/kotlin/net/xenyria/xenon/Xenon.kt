@@ -15,28 +15,30 @@ import net.xenyria.xenon.input.keyboard.KeyboardManager
 import net.xenyria.xenon.input.mouse.fromSDL
 import net.xenyria.xenon.network.XenonPacketListener
 import net.xenyria.xenon.protocol.IXenonPacket
-import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
 import org.joml.Vector2d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 val LOGGER: Logger = LoggerFactory.getLogger("Xenon")
 
+/**
+ * Class that represents an instance of Xenon.
+ */
 class Xenon(val version: String) {
+
+    private var session: Session? = null
+    private var _keyboard: KeyboardManager? = null
+    private var pendingPacket: IXenonPacket? = null
 
     val client = GameClient(this)
     val config: XenonConfig get() = XenonClientConfig.config
     val forklift: Forklift get() = requireNotNull(getForkliftOrNull()) { "Not connected to any supported server" }
-
-    fun getForkliftOrNull(): Forklift? {
-        return _session?.forklift
-    }
-
-    private var _session: Session? = null
-
-    private var _keyboard: KeyboardManager? = null
     val keyboard: KeyboardManager get() = requireNotNull(_keyboard) { "Keyboard functionality is not ready yet" }
     fun getKeyboardManagerOrNull(): KeyboardManager? = _keyboard
+
+    fun getForkliftOrNull(): Forklift? {
+        return session?.forklift
+    }
 
     init {
         LOGGER.info("Starting up Xenon...")
@@ -53,44 +55,33 @@ class Xenon(val version: String) {
 
     fun onTick() {
         getForkliftOrNull()?.onTick()
-        val packet = _pendingPacket
-        if (packet != null) {
-            client.sendPacket(packet)
-            _pendingPacket = null
-        }
+        sendPendingPacket()
+    }
 
-        /*
-        client.renderShapes(
-            listOf(
-                SphereShape(
-                    "sphere",
-                    Vector3d(32.0),
-                    SphereShapeProperties(
-                        1.0F, color = Color.WHITE, visibleThroughWalls = false,
-                        isOutline = true
-                    ),
-                    textLines = listOf(
-                        "{\"text\": \"Sphere\", \"color\":\"blue\"}"
-                    )
-                ),
-            )
-        )*/
+    fun debouncePacket(packet: IXenonPacket) {
+        pendingPacket = packet
+    }
+
+    private fun sendPendingPacket() {
+        val packet = pendingPacket ?: return
+        client.sendPacket(packet)
+        pendingPacket = null
     }
 
     fun endSession() {
         getForkliftOrNull()?.reset()
-        _session?.destroy()
-        this._session = null
+        session?.destroy()
+        this.session = null
     }
 
     fun onMouseButton(mouseButtonInfo: MouseButtonInfo, action: Int): Boolean {
         if (game.gui.screen() != null) return false
         val forklift = xenon.getForkliftOrNull() ?: return false
 
-        val event = fromSDL(mouseButtonInfo.button, action, mouseButtonInfo.modifiers)
-        if (event.isRightMouseButton && event.isReleased) forklift.editor.leaveDragMode()
+        val event = fromSDL(mouseButtonInfo.button, action)
+        if (event.isRightMouseButton && event.isReleased) forklift.editorClient.leaveDragMode()
 
-        if (forklift.editor.onMouseButton(event) && forklift.editor.isActive) {
+        if (forklift.editorClient.onMouseButton(event) && forklift.editorClient.isActive) {
             keyboard.releaseAllKeys()
             return true
         }
@@ -98,59 +89,54 @@ class Xenon(val version: String) {
     }
 
     fun shouldShiftHud(): Boolean {
-        return getForkliftOrNull()?.editor?.isActive ?: return false
+        return getForkliftOrNull()?.editorClient?.isActive ?: false
     }
 
     fun toggleEditMode(): Boolean {
         if (!client.xenonConfig.developer.enableGizmos) return false
         val forklift = getForkliftOrNull() ?: return false
-        return forklift.editor.toggleEditMode()
+        return forklift.editorClient.toggleEditMode()
     }
 
     /**
      * Called when the user moves their mouse.
-     * @return When true, the input event is discarded - meaning it's not passed to the game.
+     * @return When true, the input event is discarded - meaning it should not be passed to the game.
      */
     fun onMouseMove(mouseDelta: Vector2d): Boolean {
         val forklift = getForkliftOrNull() ?: return false
-        if (forklift.editor.isMouseLocked()) {
-            forklift.editor.onMouseMove(mouseDelta)
+        if (forklift.editorClient.isMouseLocked()) {
+            forklift.editorClient.onMouseMove(mouseDelta)
             return true
         }
         return false
     }
 
     fun getSessionOrNull(): Session? {
-        return _session
+        return session
     }
 
     fun startSession(editModeAvailable: Boolean) {
-        _session = Session(client, editModeAvailable)
-    }
-
-    private var _pendingPacket: IXenonPacket? = null
-    fun debouncePacket(packet: ServerboundUpdateGizmoPacket) {
-        _pendingPacket = packet
+        session = Session(client, editModeAvailable)
     }
 
     fun updateActivityAppId(appId: Long) {
-        _session?.updateActivityAppId(appId)
+        session?.updateActivityAppId(appId)
     }
 
     fun updateActivity(activityData: ActivityData) {
-        _session?.updateActivity(activityData)
+        session?.updateActivity(activityData)
     }
 
     fun requestCameraPerspective(perspective: CameraPerspective) {
-        _session?.requestCameraPerspective(perspective)
+        session?.requestCameraPerspective(perspective)
     }
 
     fun updateCameraLock(locked: Boolean, newMode: CameraPerspective?) {
-        _session?.updateCameraLock(locked, newMode)
+        session?.updateCameraLock(locked, newMode)
     }
 
     fun isCameraModeLocked(): Boolean {
-        return _session?.isCameraModeLocked() ?: return false
+        return session?.isCameraModeLocked() ?: return false
     }
 
     companion object {

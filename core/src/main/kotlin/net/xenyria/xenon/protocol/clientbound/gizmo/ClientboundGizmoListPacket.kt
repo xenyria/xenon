@@ -5,8 +5,8 @@ import net.xenyria.xenon.core.readUUID
 import net.xenyria.xenon.core.writeList
 import net.xenyria.xenon.core.writeUUID
 import net.xenyria.xenon.forklift.gizmo.GizmoData
-import net.xenyria.xenon.forklift.gizmo.readGizmo
-import net.xenyria.xenon.forklift.gizmo.writeGizmo
+import net.xenyria.xenon.forklift.gizmo.GizmoData.Companion.readGizmo
+import net.xenyria.xenon.forklift.gizmo.GizmoData.Companion.writeGizmo
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.XenonPacketRegistry.CLIENTBOUND_GIZMO_LIST
 import java.io.DataInputStream

@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.render.primitive
 
 import net.xenyria.xenon.core.Box
-import net.xenyria.xenon.forklift.render.colorToFloat
+import net.xenyria.xenon.forklift.render.colorChannelIntToFactor
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import org.joml.Matrix4f
 import org.joml.Vector3d
@@ -9,11 +9,15 @@ import org.joml.Vector3dc
 import org.joml.Vector3f
 import java.awt.Color
 
+/**
+ * Class that outputs the vertices required for rendering a box with the given dimension, color and rotation in-game.
+ */
 class BoxPrimitive(
     var box: Box,
     val color: Color,
     var rotation: Vector3dc = Vector3d(0.0)
 ) : IRenderPrimitive() {
+
     private fun makeVertex(matrix: Matrix4f, x: Double, y: Double, z: Double, color: Color): Vertex {
         val transformed = matrix.transformPosition(Vector3f(x.toFloat(), y.toFloat(), z.toFloat()))
 
@@ -21,14 +25,14 @@ class BoxPrimitive(
             transformed.x + box.minX + (box.sizeX / 2.0),
             transformed.y + box.minY + (box.sizeY / 2.0),
             transformed.z + box.minZ + (box.sizeZ / 2.0),
-            colorToFloat(color.red),
-            colorToFloat(color.green),
-            colorToFloat(color.blue),
-            colorToFloat(color.alpha)
+            colorChannelIntToFactor(color.red),
+            colorChannelIntToFactor(color.green),
+            colorChannelIntToFactor(color.blue),
+            colorChannelIntToFactor(color.alpha)
         )
     }
 
-    override fun getVertices(): List<Vertex> {
+    override fun extractVertices(): List<Vertex> {
         val vertices = ArrayList<Vertex>()
 
         val matrix = Matrix4f()

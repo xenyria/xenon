@@ -3,6 +3,11 @@ package net.xenyria.xenon.core
 import java.io.InputStream
 import java.io.OutputStream
 
+/**
+ * Helper function for writing a variable-length integer to an OutputStream.
+ * https://minecraft.wiki/w/Java_Edition_protocol/Packets#VarInt_and_VarLong
+ */
+
 const val SEGMENT_BITS = 0x7F
 const val CONTINUE_BIT = 0x80
 

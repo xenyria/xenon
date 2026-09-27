@@ -5,7 +5,7 @@ import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
 import net.xenyria.xenon.xenon
 
-class MinecraftRenderAdapter : IGameRenderer {
+class MinecraftRenderAdapter : IGameRenderContext {
 
     private val passes = ArrayList<RenderPass>()
 
@@ -33,7 +33,13 @@ class MinecraftRenderAdapter : IGameRenderer {
         val type = primitive.getPipeline(visibleThroughWalls)
         if (currentType == null || currentType != type) {
             val currentType = currentType
-            if (currentType != null && currentList.isNotEmpty()) passes.add(RenderPass(currentType, currentList, currentHolograms))
+            if (currentType != null && currentList.isNotEmpty()) passes.add(
+                RenderPass(
+                    currentType,
+                    currentList,
+                    currentHolograms
+                )
+            )
             currentHolograms = ArrayList()
             currentList = ArrayList()
             this.currentType = type

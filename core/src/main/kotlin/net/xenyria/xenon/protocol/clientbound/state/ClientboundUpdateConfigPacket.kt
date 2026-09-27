@@ -1,8 +1,8 @@
 package net.xenyria.xenon.protocol.clientbound.state
 
+import net.xenyria.xenon.core.readVarInt
+import net.xenyria.xenon.core.writeVarInt
 import net.xenyria.xenon.forklift.config.ForkliftConfig
-import net.xenyria.xenon.forklift.config.deserializeConfig
-import net.xenyria.xenon.forklift.config.serializeConfig
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.XenonPacketRegistry
 import java.io.DataInputStream
@@ -17,14 +17,14 @@ class ClientboundUpdateConfigPacket : IXenonPacket(XenonPacketRegistry.CLIENTBOU
         private set
 
     override fun deserialize(input: DataInputStream) {
-        val length = input.readInt()
-        val result = deserializeConfig(input.readNBytes(length))
+        val length = input.readVarInt()
+        val result = ForkliftConfig.deserializeConfig(input.readNBytes(length))
         config = result.getOrThrow()
     }
 
     override fun serialize(output: DataOutputStream) {
-        val bytes = serializeConfig(config)
-        output.writeInt(bytes.size)
+        val bytes = ForkliftConfig.serializeConfig(config)
+        output.writeVarInt(bytes.size)
         output.write(bytes)
     }
 

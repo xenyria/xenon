@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import static net.xenyria.xenon.util.MixinUtilsKt.getCurrentChatOffset;
 
+@SuppressWarnings("unused")
 @Mixin(value = CommandSuggestions.class, priority = Integer.MIN_VALUE)
 public class CommandSuggestionMixin {
 

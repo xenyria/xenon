@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("unused")
 @Mixin(value = Hud.class, priority = Integer.MIN_VALUE)
 public final class HudMixin {
 
@@ -22,7 +23,7 @@ public final class HudMixin {
             index = 5
     )
     private int shiftItemHotbar(int height) {
-        return net.xenyria.xenon.util.MixinUtilsKt.getCurrentHudOffset();
+        return net.xenyria.xenon.util.MixinUtilsKt.getCurrentHudOffset() + height;
     }
 
     @Inject(method = "extractHotbarAndDecorations", at = @At("HEAD"))
