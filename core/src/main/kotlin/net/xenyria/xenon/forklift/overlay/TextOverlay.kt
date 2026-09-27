@@ -1,14 +1,15 @@
 package net.xenyria.xenon.forklift.overlay
 
-import net.xenyria.xenon.core.IHashable
-import net.xenyria.xenon.core.readVarInt
-import net.xenyria.xenon.core.sha256
-import net.xenyria.xenon.core.writeVarInt
+import net.xenyria.xenon.core.*
+import net.xenyria.xenon.core.HashHelper.sha256
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-data class TextOverlayData(
+/**
+ * Represents a text overlay.
+ */
+data class TextOverlay(
     var id: String,
     var opacity: Double = 1.0,
     var components: String = "",
@@ -19,31 +20,32 @@ data class TextOverlayData(
 ) : IHashable {
 
     fun writeToStream(stream: DataOutputStream) {
-        stream.writeUTF(id)
-        stream.writeFloat(opacity.toFloat())
-        stream.writeUTF(components)
+        stream.writeString(id)
+        stream.writeByte((opacity.toFloat() * 255).toInt())
+        stream.writeString(components)
         stream.writeByte(anchor.ordinal)
         stream.writeFloat(scale.toFloat())
         stream.writeVarInt(offsetX)
         stream.writeVarInt(offsetY)
     }
 
-    private var _cachedHash: String = ""
+    private var cachedHash: String = ""
     override fun hash(): String {
-        if (!_cachedHash.isBlank()) return _cachedHash
+        if (cachedHash.isNotBlank()) return cachedHash
+
         val bos = ByteArrayOutputStream()
         val dos = DataOutputStream(bos)
         writeToStream(dos)
-        _cachedHash = sha256(bos.toByteArray())
-        return _cachedHash
+        cachedHash = sha256(bos.toByteArray())
+        return cachedHash
     }
 
     companion object {
-        fun fromStream(stream: DataInputStream): TextOverlayData {
-            return TextOverlayData(
-                stream.readUTF(),
-                stream.readFloat().toDouble(),
-                stream.readUTF(),
+        fun fromStream(stream: DataInputStream): TextOverlay {
+            return TextOverlay(
+                stream.readString(),
+                (stream.read() / 255.0),
+                stream.readString(),
                 OverlayAnchor.entries[stream.readByte().toInt()],
                 stream.readFloat().toDouble(),
                 stream.readVarInt(),

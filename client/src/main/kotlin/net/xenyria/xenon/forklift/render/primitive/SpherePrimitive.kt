@@ -1,6 +1,6 @@
 package net.xenyria.xenon.forklift.render.primitive
 
-import net.xenyria.xenon.forklift.render.colorToFloat
+import net.xenyria.xenon.forklift.render.colorChannelIntToFactor
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import org.joml.Vector3dc
 import java.awt.Color
@@ -9,6 +9,9 @@ import kotlin.math.sin
 
 private const val PI = Math.PI.toFloat()
 
+/**
+ * Helper class for generating the vertices required to render a sphere in 3D space.
+ */
 class SphereBuilder(
     private val offset: Vector3dc,
     color: Color,
@@ -18,10 +21,10 @@ class SphereBuilder(
     private val _vertices: Array<Vertex>
     val vertices: List<Vertex> get() = _vertices.toList()
 
-    private val red = colorToFloat(color.red)
-    private val green = colorToFloat(color.green)
-    private val blue = colorToFloat(color.blue)
-    private val alpha = colorToFloat(color.alpha)
+    private val red = colorChannelIntToFactor(color.red)
+    private val green = colorChannelIntToFactor(color.green)
+    private val blue = colorChannelIntToFactor(color.blue)
+    private val alpha = colorChannelIntToFactor(color.alpha)
 
     private fun makeVertex(x: Number, y: Number, z: Number): Vertex {
         return Vertex(
@@ -79,9 +82,12 @@ class SphereBuilder(
 
 }
 
+/**
+ * Represents a sphere primitive that can be rendered in 3D space.
+ */
 class SpherePrimitive(val position: Vector3dc, val color: Color, val radius: Float, val stacks: Int, val slices: Int) :
     IRenderPrimitive() {
-    override fun getVertices(): List<Vertex> {
+    override fun extractVertices(): List<Vertex> {
         val builder = SphereBuilder(position, color, radius, stacks, slices)
         return builder.vertices
     }

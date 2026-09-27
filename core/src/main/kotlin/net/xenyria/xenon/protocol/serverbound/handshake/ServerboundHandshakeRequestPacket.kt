@@ -1,5 +1,7 @@
 package net.xenyria.xenon.protocol.serverbound.handshake
 
+import net.xenyria.xenon.core.readString
+import net.xenyria.xenon.core.writeString
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.XenonPacketRegistry
 import java.io.DataInputStream
@@ -17,11 +19,11 @@ class ServerboundHandshakeRequestPacket() : IXenonPacket(XenonPacketRegistry.SER
     lateinit var version: String
 
     override fun deserialize(input: DataInputStream) {
-        version = input.readUTF()
+        version = input.readString()
     }
 
     override fun serialize(output: DataOutputStream) {
-        output.writeUTF(version)
+        output.writeString(version)
     }
 
 }

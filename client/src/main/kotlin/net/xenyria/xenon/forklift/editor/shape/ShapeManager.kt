@@ -1,9 +1,12 @@
 package net.xenyria.xenon.forklift.editor.shape
 
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.shape.IEditorShape
 
-class ShapeManager(val client: IGameClient) {
+/**
+ * Manages shapes for a client.
+ */
+class ShapeManager(val client: IEditorGameClient) {
 
     private val _shapes = ArrayList<IEditorShape<*>>()
 

@@ -1,5 +1,8 @@
 package net.xenyria.xenon.forklift.overlay
 
+/**
+ * Anchor points for overlay elements in Forklift.
+ */
 enum class OverlayAnchor {
     TOP_LEFT,
     TOP_CENTER,

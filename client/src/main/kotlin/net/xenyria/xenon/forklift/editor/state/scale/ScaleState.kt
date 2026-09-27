@@ -2,11 +2,11 @@ package net.xenyria.xenon.forklift.editor.state.scale
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.EditorMode
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.state.IEditorCommonState
 import net.xenyria.xenon.forklift.editor.state.MODIFIERS_COLOR
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
+import net.xenyria.xenon.forklift.render.gizmo.AxisTipType
 import net.xenyria.xenon.forklift.render.roundToNearestMultiple
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.message.MessageComponent
@@ -17,13 +17,17 @@ import kotlin.math.abs
 const val DEFAULT_SCALE_SENSITIVITY = 0.005
 const val DEFAULT_SCALE_SHIFT_SENSITIVITY = 0.00125
 
-class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
+/**
+ * Editor mode for scaling a target.
+ * Supports scaling along a single axis or combined scaling along all axes. (+ grid snapping and fine control)
+ */
+class ScaleState(client: IEditorGameClient, target: IEditorTarget) : IEditorCommonState(client, target) {
 
-    override val renderAxisType: AxisRenderType = AxisRenderType.BOX
+    override val renderAxisType: AxisTipType = AxisTipType.BOX
     private var initialScaleValue: Vector3dc = Vector3d(0.0)
 
     fun getSnapValue(): Double {
-        return game.forkliftConfig.scaleGridSnap
+        return client.forkliftConfig.scaleGridSnap
     }
 
     override fun beginEdit() {
@@ -37,9 +41,9 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     @Synchronized
     private fun appendEditingModifiers(): String {
         val modifiers = ArrayList<String>()
-        if (game.hasControlDown()) modifiers.add("Grid")
-        if (game.hasShiftDown()) modifiers.add("Fine")
-        if (game.hasAltDown()) modifiers.add("Combined")
+        if (client.hasControlDown()) modifiers.add("Grid")
+        if (client.hasShiftDown()) modifiers.add("Fine")
+        if (client.hasAltDown()) modifiers.add("Combined")
         return if (modifiers.isEmpty()) "" else " (" + modifiers.joinToString(", ") + ")"
     }
 
@@ -47,14 +51,14 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     override fun moveByDelta(axis: Axis, displacement: Double) {
         var displacement = displacement
         val sensitivity: Double =
-            if (game.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
+            if (client.hasShiftDown()) DEFAULT_SCALE_SHIFT_SENSITIVITY else DEFAULT_SCALE_SENSITIVITY
         displacement *= sensitivity * -1
 
         var newScale: Vector3dc = Vector3d(initialScaleValue)
-        if (game.hasAltDown()) {
+        if (client.hasAltDown()) {
             newScale = Vector3d(newScale).add(displacement, displacement, displacement)
             // Combined scaling
-            if (game.hasControlDown()) {
+            if (client.hasControlDown()) {
                 // Snap to grid
                 target.scale = roundToNearestMultiple(newScale, getSnapValue())
             } else {
@@ -64,7 +68,7 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
         } else {
             // Single axis scaling
             newScale = Vector3d(newScale).add(axis.positive.mul(displacement))
-            if (game.hasControlDown()) {
+            if (client.hasControlDown()) {
                 // Snap to grid
                 target.scale = roundToNearestMultiple(newScale, getSnapValue(), axis)
             } else {
@@ -79,8 +83,8 @@ class ScaleState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(
     @Synchronized
     override fun getStatus(): Message? {
         val axis = getEditingAxis()
-        if (game.editor.isSelected(target.uuid) && axis != null) {
-            val effectiveDelta = deltaOf(target.scale, previousScale!!)
+        if (client.editorState.isSelected(target.uuid) && axis != null) {
+            val effectiveDelta = deltaOf(previousScale!!, target.scale)
             val delta = getVectorComponent(axis, effectiveDelta)
             val sign = delta < 0
             val signStr = if (sign) "-" else "+"

@@ -18,7 +18,7 @@ import static net.xenyria.xenon.util.MixinUtilsKt.*;
 /**
  * Mixin for shifting the chat up when the player is in editing mode.
  */
-@SuppressWarnings("DataFlowIssue")
+@SuppressWarnings({"DataFlowIssue", "unused"})
 @Mixin(value = ChatScreen.class, priority = Integer.MIN_VALUE)
 public final class ChatMixin {
 

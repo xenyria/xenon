@@ -8,6 +8,10 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 import kotlin.math.floor
 
+/**
+ * Helper functions for working with 3D vectors and formatting numbers.
+ */
+
 val THREE_DECIMALS = DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US))
 val TWO_DECIMALS = DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US))
 val ONE_DECIMAL = DecimalFormat("0.0", DecimalFormatSymbols.getInstance(Locale.US))

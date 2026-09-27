@@ -13,10 +13,10 @@ import net.xenyria.xenon.core.calculateDirection
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.config.ForkliftConfig
-import net.xenyria.xenon.forklift.editor.Editor
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.EditorClientState
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
-import net.xenyria.xenon.forklift.overlay.TextOverlayData
+import net.xenyria.xenon.forklift.overlay.TextOverlay
 import net.xenyria.xenon.forklift.render.ForkliftRenderer
 import net.xenyria.xenon.forklift.render.RenderableShape
 import net.xenyria.xenon.forklift.render.overlay.ForkliftOverlayRenderer
@@ -31,7 +31,10 @@ import net.xenyria.xenon.util.toComponent
 import org.joml.*
 import java.util.*
 
-class GameClient(private val xenon: Xenon) : IGameClient {
+/**
+ * Implementation of the game (editor) client interface for the Xenon mod.
+ */
+class GameClient(private val xenon: Xenon) : IEditorGameClient {
 
     @Synchronized
     override fun getCamera(): GameCamera {
@@ -65,13 +68,15 @@ class GameClient(private val xenon: Xenon) : IGameClient {
 
         val offset = Vector3d()
         worldPosition.sub(Vector3d(camPos.x, camPos.y, camPos.z), offset)
-
         val projected = mat.transformProject(offset)
-        return Vector2d(projected.x, projected.y)
+
+        // The viewport ranges from -1.0,-1.0 to 1.0,1.0
+        // Since Minecraft flips the rendered image upside down we basically just invert it here.
+        return Vector2d(projected.x, 2.0 - projected.y)
     }
 
     @Synchronized
-    override fun sendMessage(message: Message) {
+    override fun displayChatMessage(message: Message) {
         game.gui.chatListener().handleSystemMessage(message.toComponent(), false)
     }
 
@@ -101,12 +106,12 @@ class GameClient(private val xenon: Xenon) : IGameClient {
     }
 
     @Synchronized
-    override fun renderOverlays(overlays: List<TextOverlayData>) {
+    override fun renderOverlays(overlays: List<TextOverlay>) {
         ForkliftOverlayRenderer.updateOverlays(overlays)
     }
 
     override fun isInView(box: Box): Boolean {
-        return _frustum?.isVisible(AABB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
+        return frustum?.isVisible(AABB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
             ?: return false
     }
 
@@ -126,7 +131,7 @@ class GameClient(private val xenon: Xenon) : IGameClient {
     }
 
     override fun isDragging(): Boolean {
-        return xenon.getForkliftOrNull()?.editor?.dragHandler?.isActive() ?: false
+        return xenon.getForkliftOrNull()?.editorClient?.dragHandler?.isActive() ?: false
     }
 
     override fun updateActivity(activityData: ActivityData) {
@@ -181,12 +186,12 @@ class GameClient(private val xenon: Xenon) : IGameClient {
         return game.player?.uuid
     }
 
-    private var _frustum: Frustum? = null
+    private var frustum: Frustum? = null
     fun setFrustum(frustum: Frustum) {
-        _frustum = frustum
+        this.frustum = frustum
     }
 
     override val forkliftConfig: ForkliftConfig = ForkliftConfig()
     override val xenonConfig: XenonConfig get() = XenonClientConfig.config
-    override val editor: Editor get() = xenon.forklift.editor
+    override val editorState: EditorClientState get() = xenon.forklift.editorClient
 }

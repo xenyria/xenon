@@ -1,10 +1,6 @@
 package net.xenyria.xenon.forklift.editor
 
-import net.xenyria.xenon.camera.CameraPerspective
-import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.core.*
-import net.xenyria.xenon.discord.ActivityData
-import net.xenyria.xenon.forklift.GameCamera
 import net.xenyria.xenon.forklift.TransformationMode
 import net.xenyria.xenon.forklift.config.ForkliftConfig
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
@@ -19,17 +15,16 @@ import net.xenyria.xenon.forklift.editor.target.IEditorTarget
 import net.xenyria.xenon.forklift.editor.target.TargetManager
 import net.xenyria.xenon.forklift.editor.target.TrackedTarget
 import net.xenyria.xenon.forklift.gizmo.GizmoData
-import net.xenyria.xenon.forklift.overlay.TextOverlayData
+import net.xenyria.xenon.forklift.overlay.TextOverlay
+import net.xenyria.xenon.game.IGameClient
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.message.MessageComponent
 import net.xenyria.xenon.message.MessageFormatter
-import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundRequestGizmoPacket
 import net.xenyria.xenon.protocol.serverbound.gizmo.ServerboundUpdateGizmoPacket
 import net.xenyria.xenon.protocol.serverbound.state.ServerboundRequestModeSwitchPacket
 import net.xenyria.xenon.shape.IEditorShape
 import org.joml.Vector2d
-import org.joml.Vector3dc
 import java.awt.Color
 import java.util.*
 
@@ -43,25 +38,28 @@ data class RenderableGizmo(
         get() = makeCenteredBox(target.target.position, 3.0, 3.0)
 }
 
+/**
+ * Enum representing the different editor modes available in Forklift.
+ */
 enum class EditorMode(val index: Int, val displayName: String, val color: Color) {
 
     TRANSLATE(1, "T", AXIS_Z_COLOR) {
-        override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
-            return TranslateState(game, target)
+        override fun createMode(client: IEditorGameClient, target: IEditorTarget): IEditorState {
+            return TranslateState(client, target)
         }
     },
     SCALE(2, "S", AXIS_Y_COLOR) {
-        override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
-            return ScaleState(game, target)
+        override fun createMode(client: IEditorGameClient, target: IEditorTarget): IEditorState {
+            return ScaleState(client, target)
         }
     },
     ROTATE(3, "R", AXIS_X_COLOR) {
-        override fun createMode(game: IGameClient, target: IEditorTarget): IEditorState {
-            return RotateState(game, target)
+        override fun createMode(client: IEditorGameClient, target: IEditorTarget): IEditorState {
+            return RotateState(client, target)
         }
     };
 
-    abstract fun createMode(game: IGameClient, target: IEditorTarget): IEditorState
+    abstract fun createMode(client: IEditorGameClient, target: IEditorTarget): IEditorState
 
     companion object {
         fun byId(id: Int): EditorMode? {
@@ -78,59 +76,56 @@ enum class EditorMode(val index: Int, val displayName: String, val color: Color)
     }
 }
 
-interface IGameClient {
-    fun getCamera(): GameCamera
-
-    fun getMousePosition(): Vector2d
-
-    fun sendPacket(packet: IXenonPacket)
-
-    fun isInView(box: Box): Boolean
-
-    fun getScreenPosition(worldPosition: Vector3dc): Vector2d
-
-    fun sendMessage(message: Message)
-
-    fun hasShiftDown(): Boolean
-    fun hasControlDown(): Boolean
-    fun hasAltDown(): Boolean
+/**
+ * Abstract interface for editor clients. (Game clients with support for Xenon's Forklift/Editor feature)
+ */
+interface IEditorGameClient : IGameClient {
 
     /**
-     * This updates the last X&Y values Minecraft has received from the mouse. We fake this to prevent the camera from
-     * moving too much after the player has moved the gizmo.
+     * Instructs the client to render the given gizmos for the next frame.
+     * The supplied state is kept until the next call to this method happens.
      */
-    fun updateInternalMousePosition(x: Double, y: Double)
-
-    fun getPlayerId(): UUID?
-
     fun renderGizmos(renderList: List<RenderableGizmo>)
+
+    /**
+     * Instructs the client to render the given shapes on the next frame.
+     * The supplied state is kept until the next call to this method happens.
+     */
     fun renderShapes(shapes: List<IEditorShape<*>>)
-    fun renderOverlays(overlays: List<TextOverlayData>)
 
-    fun startSession(canUseEditMode: Boolean)
+    /**
+     * Instructs the client to render the given text overlays on the next frame.
+     * The supplied state is kept until the next call to this method happens.
+     */
+    fun renderOverlays(overlays: List<TextOverlay>)
 
-    fun getModVersion(): String
-
-    fun debounceGizmoPacket(packet: ServerboundUpdateGizmoPacket)
-
+    /**
+     * States whether the user is currently performing a drag operation.
+     */
     fun isDragging(): Boolean
 
-    fun updateActivity(activityData: ActivityData)
-    fun updateActivityAppId(appId: Long)
+    /**
+     * Debounces a gizmo packet, basically queueing the packet to be sent on the next tick.
+     * If another call to this function is made before the next tick, the previous packet is discarded and replaced with
+     * the new one.
+     */
+    fun debounceGizmoPacket(packet: ServerboundUpdateGizmoPacket)
 
-    fun updateCameraLock(isLocked: Boolean, newMode: CameraPerspective?)
-    fun requestCameraPerspective(perspective: CameraPerspective)
-
-    fun setCameraPerspective(perspective: CameraPerspective)
-    fun getCameraPerspective(): CameraPerspective
-
+    /**
+     * Configuration for Forklift.
+     */
     val forkliftConfig: ForkliftConfig
-    val xenonConfig: XenonConfig
 
-    val editor: Editor
+    /**
+     * The currently active editor client state.
+     */
+    val editorState: EditorClientState
 }
 
-class Editor(val client: IGameClient) {
+/**
+ * Main class for an editor client.
+ */
+class EditorClientState(val client: IEditorGameClient) {
 
     val dragHandler = EditorDragHandler(client)
     val targetManager = TargetManager(client)
@@ -177,7 +172,7 @@ class Editor(val client: IGameClient) {
         val gizmo = getActiveGizmo() ?: return
 
         val gizmoDelta = dragHandler.getDragMouseDelta(delta.x, delta.y)
-        gizmo.handleMouseMovement(gizmoDelta)
+        gizmo.onMouseMovement(gizmoDelta)
         client.updateInternalMousePosition(delta.x, delta.y)
     }
 
@@ -186,12 +181,12 @@ class Editor(val client: IGameClient) {
         if (!isActive) return false
         for (candidate in targetManager.getSortedTargets()) {
             if (!candidate.supportsCurrentMode()) continue
-            val result = candidate.onInteract(event)
+            val result = candidate.onMouseButtonEvent(event)
             if (result == GizmoInteractionResult.NONE) continue
 
             if (result == GizmoInteractionResult.START_EDIT) {
                 if (!targetManager.canEditTarget(candidate.target.uuid)) {
-                    client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_target_already_being_edited"))
+                    client.displayChatMessage(MessageFormatter.formatForkliftMessage("forklift_target_already_being_edited"))
                     return false
                 }
 
@@ -221,6 +216,9 @@ class Editor(val client: IGameClient) {
         dragHandler.exitDragMode()
     }
 
+    /**
+     * Returns the current status message for the editor.
+     */
     fun getStatusMessage(): Message {
         val gizmo = getActiveGizmo()
         if (gizmo != null) {
@@ -231,7 +229,7 @@ class Editor(val client: IGameClient) {
             val msg = target.getStatusMessage() ?: continue
             return msg
         }
-        return Message(MessageComponent("Idle", Color(64, 64, 64)))
+        return Message(MessageComponent("Idle", Color(128, 128, 128)))
     }
 
     fun getModeMessage(): Message {
@@ -250,13 +248,16 @@ class Editor(val client: IGameClient) {
     }
 
     fun leaveEditMode() {
-        if (!timeoutManager.addTimeout("edit-mode") {
-                isActive = true
-                client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
-            }) {
-            return
+        // Exit early if we're already trying to leave edit mode.
+        if (timeoutManager.addTimeout(
+                "edit-mode",
+                onTimeout = {
+                    isActive = true
+                    client.displayChatMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
+                })
+        ) {
+            client.sendPacket(ServerboundRequestModeSwitchPacket(false))
         }
-        client.sendPacket(ServerboundRequestModeSwitchPacket(false))
     }
 
     fun toggleEditMode(): Boolean {
@@ -276,7 +277,7 @@ class Editor(val client: IGameClient) {
     private fun enterEditMode() {
         if (!timeoutManager.addTimeout("edit-mode") {
                 isActive = false
-                client.sendMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
+                client.displayChatMessage(MessageFormatter.formatForkliftMessage("forklift_edit_mode_timeout"))
             }) {
             return
         }
@@ -311,8 +312,7 @@ class Editor(val client: IGameClient) {
         targetManager.updateGizmos(added, removed, updated)
     }
 
-    fun updateOverlays(overlays: List<TextOverlayData>) {
+    fun updateOverlays(overlays: List<TextOverlay>) {
         overlayManager.updateOverlays(overlays)
     }
-
 }

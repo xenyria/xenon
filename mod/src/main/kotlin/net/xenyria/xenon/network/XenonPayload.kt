@@ -5,6 +5,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.resources.Identifier
 import net.xenyria.xenon.CHANNEL_ID
 
+/**
+ * Custom plugin payload for Xenon.
+ */
 class XenonPayload() : CustomPacketPayload {
 
     lateinit var bytes: ByteArray

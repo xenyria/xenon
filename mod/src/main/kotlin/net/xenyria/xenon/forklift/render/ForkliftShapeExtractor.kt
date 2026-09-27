@@ -8,7 +8,7 @@ import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
-import net.xenyria.xenon.forklift.render.shape.ShapeRenderers
+import net.xenyria.xenon.forklift.render.shape.ShapeRendererRegistry
 import net.xenyria.xenon.shape.IEditorShape
 import net.xenyria.xenon.util.parseComponentFromJSON
 import net.xenyria.xenon.xenon
@@ -51,19 +51,19 @@ object ForkliftShapeExtractor {
         renderAdapter.drawPrimitives(primitives, false)
 
         val forklift = xenon.getForkliftOrNull()
-        if (forklift != null && forklift.editor.isActive && config.developer.enableGizmos)
+        if (forklift != null && forklift.editorClient.isActive && config.developer.enableGizmos)
             for (gizmo in gizmos) {
-                val alwaysRender = forklift.editor.isSelected(gizmo.target.target.uuid) || gizmo.isSelected
+                val alwaysRender = forklift.editorClient.isSelected(gizmo.target.target.uuid) || gizmo.isSelected
                 if (!alwaysRender) {
                     if (gizmo.error != null || !xenon.client.isInView(gizmo.cullingBox)) continue
                 }
-                gizmo.target.render(renderAdapter, gizmo.isSelected, gizmo.isTransparent)
+                gizmo.target.extract(renderAdapter, gizmo.isSelected, gizmo.isTransparent)
             }
 
         if (config.developer.enableShapes) {
             for ((shape, lines) in shapes) {
-                val renderer = ShapeRenderers.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
-                if (!renderer.drawShape(renderAdapter, shape)) continue
+                val renderer = ShapeRendererRegistry.getRenderer(shape.type) as IShapeRenderer<IEditorShape<*>>
+                if (!renderer.extract(renderAdapter, shape)) continue
                 if (lines.isNotEmpty()) renderAdapter.drawHologram(
                     Hologram(
                         shape.textDisplayOrigin,

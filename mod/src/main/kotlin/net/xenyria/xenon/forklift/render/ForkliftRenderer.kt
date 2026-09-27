@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.StagedVertexBuffer
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.world.phys.Vec3
 import net.xenyria.xenon.MOD_ID
 import net.xenyria.xenon.config.XenonClientConfig
@@ -33,13 +34,19 @@ val MODEL_OFFSET: Vector3f = Vector3f()
 val TEXTURE_MATRIX: Matrix4f = Matrix4f()
 
 /**
+ * Class that provides an interface for rendering shapes, gizmos and other primitives.
+ *
  * Huge parts of this class are based around rendering examples from Fabric:
  * https://github.com/FabricMC/fabric-docs/blob/main/reference/latest/src/client/java/com/example/docs/rendering/CustomRenderPipeline.java
  */
 object ForkliftRenderer {
 
     private val renderState = RenderState()
-    private val bufferManager = StagedBufferManager()
+    private var extractedPasses: List<RenderPass> = emptyList()
+    private val stagedVertexBuffer = StagedVertexBuffer(
+        { "Xenon Forklift Debug Render Buffer" },
+        RenderType.BIG_BUFFER_SIZE // Appears to be 4 MiB
+    )
 
     fun updateGizmos(gizmos: List<RenderableGizmo>) {
         renderState.gizmos = gizmos.toList()
@@ -49,14 +56,8 @@ object ForkliftRenderer {
         renderState.shapes = shapes.toList()
     }
 
-    fun updateAdditionalPrimitives(primitives: List<IRenderPrimitive>) {
-        renderState.additionalPrimitives = primitives.toList()
-    }
-
-    private var extractedPasses: List<RenderPass> = emptyList()
-
     fun initialize() {
-        LevelExtractionEvents.END_EXTRACTION.register { context ->
+        LevelExtractionEvents.END_EXTRACTION.register { _ ->
             extractedPasses = ForkliftShapeExtractor.extract(
                 XenonClientConfig.config,
                 renderState.additionalPrimitives,
@@ -89,7 +90,7 @@ object ForkliftRenderer {
     private fun drawGizmoErrors(context: LevelRenderContext) {
         val forklift = xenon.getForkliftOrNull() ?: return
         val config = xenon.config
-        if (!forklift.editor.isActive || !config.developer.enableGizmos) return
+        if (!forklift.editorClient.isActive || !config.developer.enableGizmos) return
         val renderer = WorldTextRenderer(context)
 
         for ((target, _, _, errorMessage) in renderState.gizmos) {
@@ -123,8 +124,7 @@ object ForkliftRenderer {
         matrices.translate(-camera.x, -camera.y, -camera.z)
 
         val primitive = pipeline.primitiveTopology
-        val stagedBuffer = bufferManager.getBuffer(renderPass.pipelineType)
-        val draw = stagedBuffer.appendDraw(
+        val draw = stagedVertexBuffer.appendDraw(
             binding,
             primitive,
             if (primitive == PrimitiveTopology.QUADS)
@@ -134,22 +134,21 @@ object ForkliftRenderer {
         )
         val positionMatrix = requireNotNull(context.poseStack().last()) { "Position matrix is not available" }
 
-        val builder = stagedBuffer.getVertexBuilder(draw)
+        val builder = stagedVertexBuffer.getVertexBuilder(draw)
         for (primitive in renderPass.primitives) {
             renderPrimitiveToBuffer(positionMatrix.pose(), primitive, builder)
         }
 
         matrices.popPose()
-        stagedBuffer.upload()
+        stagedVertexBuffer.upload()
 
-        val info = stagedBuffer.getExecuteInfo(draw)
+        val info = stagedVertexBuffer.getExecuteInfo(draw)
         if (info != null) draw(
             Minecraft.getInstance(), info, pipeline,
             renderPass.pipelineType.toString().lowercase(), iteration
         )
 
-        // We're assuming that there is only one pass per pipeline type per frame.
-        stagedBuffer.endFrame()
+        stagedVertexBuffer.endFrame()
     }
 
     private fun renderPrimitiveToBuffer(
@@ -157,7 +156,7 @@ object ForkliftRenderer {
         primitive: IRenderPrimitive,
         builder: VertexConsumer
     ) {
-        for (vertex in primitive.getVertices()) {
+        for (vertex in primitive.extractVertices()) {
             val bufferVertex = builder.addVertex(
                 positionMatrix, vertex.x.toFloat(), vertex.y.toFloat(), vertex.z.toFloat()
             )
@@ -178,7 +177,7 @@ object ForkliftRenderer {
     }
 
     fun destroy() {
-        bufferManager.destroy()
+        stagedVertexBuffer.close()
     }
 
     private fun draw(

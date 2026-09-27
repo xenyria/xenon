@@ -2,7 +2,7 @@ package net.xenyria.xenon.forklift.render.primitive
 
 import net.xenyria.xenon.core.Rotation
 import net.xenyria.xenon.core.toDirection
-import net.xenyria.xenon.forklift.render.colorToFloat
+import net.xenyria.xenon.forklift.render.colorChannelIntToFactor
 import net.xenyria.xenon.forklift.render.pipeline.RenderPipelineType
 import org.joml.Math.toRadians
 import org.joml.Matrix4d
@@ -12,10 +12,17 @@ import java.awt.Color
 
 const val SEGMENTS = 8
 
+/**
+ * Helper object for generating the vertices required to render a cone in 3D space.
+ * Cones are currently used for rendering the axis arrows for translation gizmos in the editor.
+ */
 private object ConeBakery {
 
     private val center = Vector3d(0.0)
 
+    /**
+     * Generates two points on the circumference of a circle given a rotation angle, step size, and radius.
+     */
     private fun getSegmentPoints(rotation: Double, step: Double, radius: Double): Pair<Vector3d, Vector3d> {
         val fromRotationMatrix = Matrix4d()
         val toRotationMatrix = Matrix4d()
@@ -27,6 +34,9 @@ private object ConeBakery {
         return from to to
     }
 
+    /**
+     * Generates the vertices required to render a cone with the given parameters.
+     */
     fun makeVertices(
         segments: Int, offset: Vector3d,
         radius: Double, length: Double,
@@ -41,7 +51,6 @@ private object ConeBakery {
         val step = 360F / segments
         var currentRotation = 0f
         while (currentRotation <= 360f) {
-
             val (firstPoint, secondPoint) = getSegmentPoints(currentRotation.toDouble(), step.toDouble(), radius)
 
             // Baseplate
@@ -72,17 +81,22 @@ private object ConeBakery {
 
         return Vertex(
             position.x, position.y, position.z,
-            colorToFloat(color.red),
-            colorToFloat(color.green),
-            colorToFloat(color.blue),
-            colorToFloat(color.alpha)
+            colorChannelIntToFactor(color.red),
+            colorChannelIntToFactor(color.green),
+            colorChannelIntToFactor(color.blue),
+            colorChannelIntToFactor(color.alpha)
         )
     }
 }
 
-class ConePrimitive(val top: Vector3dc, val base: Vector3dc, val color: Color, val baseRadius: Double) : IRenderPrimitive() {
+/**
+ * Class that outputs the vertices required to render a cone in 3D space.
+ */
+class ConePrimitive(
+    val top: Vector3dc, val base: Vector3dc, val color: Color, val baseRadius: Double
+) : IRenderPrimitive() {
 
-    override fun getVertices(): List<Vertex> {
+    override fun extractVertices(): List<Vertex> {
         var direction = Vector3d(top).sub(base)
         val length = direction.length()
 

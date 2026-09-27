@@ -5,7 +5,17 @@ import net.xenyria.xenon.forklift.render.shape.Line
 import org.joml.Vector3dc
 import java.awt.Color
 
-fun makeRingPrimitive(center: Vector3dc, radius: Double, color: Color, yaw: Float, width: Float, horizontal: Boolean): List<LinePrimitive> {
+/**
+ * Creates a "ring" by generating a series of line segments that form a circle in 3D space.
+ */
+fun makeRingPrimitive(
+    center: Vector3dc,
+    radius: Double,
+    color: Color,
+    yaw: Float,
+    width: Float,
+    horizontal: Boolean
+): List<LinePrimitive> {
     val points = ArrayList<Vector3dc>()
     for (point in getCircleVectors(center, radius, yaw, horizontal, 5.0)) {
         points.add(point.vector)

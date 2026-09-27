@@ -1,3 +1,5 @@
+@file:Suppress("SameParameterValue")
+
 package net.xenyria.xenon.discord
 
 import de.jcm.discordgamesdk.Core
@@ -6,29 +8,32 @@ import de.jcm.discordgamesdk.activity.Activity
 import de.jcm.discordgamesdk.activity.ActivityType
 import java.time.Instant
 
+/**
+ * Wrapper for the Discord Game SDK to manage the user's Discord activity.
+ */
 class DiscordAPI {
 
-    private val _clientId: Long
-    private var _thread: Thread? = null
-    private var _running: Boolean = false
-    private var _lastActivity: ActivityData? = null
+    private val clientId: Long
+    private var thread: Thread? = null
+    private var running: Boolean = false
+    private var lastActivity: ActivityData? = null
     var activitySupplier: (() -> ActivityData)? = null
 
     constructor(clientId: Long) {
-        this._clientId = clientId
+        this.clientId = clientId
     }
 
     @Synchronized
     fun start() {
-        _running = false
-        _thread?.join()
-        _running = true
+        running = false
+        thread?.join()
+        running = true
         val newThread = Thread({
             CreateParams().use {
-                it.clientID = _clientId
+                it.clientID = clientId
                 it.flags = CreateParams.getDefaultFlags()
                 Core(it).use { core ->
-                    while (_running) {
+                    while (running) {
                         val activity = activitySupplier?.invoke()
                         if (activity == null) {
                             core.activityManager().clearActivity()
@@ -41,12 +46,15 @@ class DiscordAPI {
                     core.activityManager().clearActivity()
                 }
             }
-        }, "Xenon Discord Thread")
-        _thread = newThread
+        }, "Xenon Discord Activity Thread")
+        thread = newThread
         newThread.start()
     }
 
-    private fun padMinLength(input: String, minLength: Int): String {
+    private fun padMinLength(
+        input: String,
+        minLength: Int
+    ): String {
         var text = input
         while (text.length < minLength) {
             text = text.padStart(minLength, ' ')
@@ -59,7 +67,7 @@ class DiscordAPI {
             core.activityManager().clearActivity()
             return
         }
-        if (activityData == _lastActivity) return
+        if (activityData == lastActivity) return
 
         val activity = Activity()
         if (activityData.state != null)
@@ -71,16 +79,16 @@ class DiscordAPI {
             activity.timestamps().start = Instant.ofEpochMilli(activityData.start!!)
         }
         activity.type = ActivityType.PLAYING
-        _lastActivity = activityData
+        lastActivity = activityData
         core.activityManager().updateActivity(activity)
     }
 
     @Synchronized
     fun stop() {
-        _running = false
-        _thread?.interrupt()
-        _thread?.join()
-        _thread = null
+        running = false
+        thread?.interrupt()
+        thread?.join()
+        thread = null
     }
 
 }

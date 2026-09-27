@@ -3,7 +3,7 @@ package net.xenyria.xenon.forklift.render.shape
 import net.xenyria.xenon.core.Box
 import net.xenyria.xenon.core.deltaOf
 import net.xenyria.xenon.core.toDirection
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.IShapeRenderer
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
 import net.xenyria.xenon.shape.impl.PyramidShape
@@ -14,9 +14,17 @@ import org.joml.Vector3f
 
 const val PYRAMID_LINE_THICKNESS = 4.0F
 
+/**
+ * Renderer implementation for pyramid shape outlines.
+ */
 object PyramidShapeRenderer : IShapeRenderer<PyramidShape> {
 
-    private data class PyramidCorners(val topLeft: Vector3dc, val topRight: Vector3dc, val bottomLeft: Vector3dc, val bottomRight: Vector3dc)
+    private data class PyramidCorners(
+        val topLeft: Vector3dc,
+        val topRight: Vector3dc,
+        val bottomLeft: Vector3dc,
+        val bottomRight: Vector3dc
+    )
 
     private fun getCorners(shape: PyramidShape): PyramidCorners? {
 
@@ -62,17 +70,45 @@ object PyramidShapeRenderer : IShapeRenderer<PyramidShape> {
         return PyramidCorners(topLeft, topRight, bottomLeft, bottomRight)
     }
 
-    override fun drawShape(renderer: IGameRenderer, shape: PyramidShape): Boolean {
+    override fun extract(renderer: IGameRenderContext, shape: PyramidShape): Boolean {
         val box = Box(shape.position, shape.properties.apex).grow(0.25, 0.25, 0.25)
         if (!renderer.isInCameraFrustum(box)) return false
 
         val outlineColor = shape.properties.outlineColor
         val (topLeft, topRight, bottomLeft, bottomRight) = getCorners(shape) ?: return false
 
-        renderer.drawPrimitives(listOf(LinePrimitive(Line(bottomLeft, bottomRight, PYRAMID_LINE_THICKNESS, outlineColor))), shape.properties.visibleThroughWalls)
-        renderer.drawPrimitives(listOf(LinePrimitive(Line(bottomRight, topRight, PYRAMID_LINE_THICKNESS, outlineColor))), shape.properties.visibleThroughWalls)
-        renderer.drawPrimitives(listOf(LinePrimitive(Line(topRight, topLeft, PYRAMID_LINE_THICKNESS, outlineColor))), shape.properties.visibleThroughWalls)
-        renderer.drawPrimitives(listOf(LinePrimitive(Line(topLeft, bottomLeft, PYRAMID_LINE_THICKNESS, outlineColor))), shape.properties.visibleThroughWalls)
+        renderer.drawPrimitives(
+            listOf(
+                LinePrimitive(
+                    Line(
+                        bottomLeft,
+                        bottomRight,
+                        PYRAMID_LINE_THICKNESS,
+                        outlineColor
+                    )
+                )
+            ), shape.properties.visibleThroughWalls
+        )
+        renderer.drawPrimitives(
+            listOf(
+                LinePrimitive(
+                    Line(
+                        bottomRight,
+                        topRight,
+                        PYRAMID_LINE_THICKNESS,
+                        outlineColor
+                    )
+                )
+            ), shape.properties.visibleThroughWalls
+        )
+        renderer.drawPrimitives(
+            listOf(LinePrimitive(Line(topRight, topLeft, PYRAMID_LINE_THICKNESS, outlineColor))),
+            shape.properties.visibleThroughWalls
+        )
+        renderer.drawPrimitives(
+            listOf(LinePrimitive(Line(topLeft, bottomLeft, PYRAMID_LINE_THICKNESS, outlineColor))),
+            shape.properties.visibleThroughWalls
+        )
 
         for (corner in listOf(bottomLeft, bottomRight, topLeft, topRight)) {
             renderer.drawPrimitives(

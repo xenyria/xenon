@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package net.xenyria.xenon.core
 
 import org.joml.Vector3d
@@ -21,13 +23,11 @@ interface IIntersectable {
     val boundingBoxes: List<Box>
 }
 
-class TypedIntersection<Type : IIntersectable>(val data: Type, val intersection: Intersection)
-
 object RayCast {
 
     /**
      * Performs a raycast on the given box. The raycast starts at the given start vector and goes in the given
-     * direction. The ray-cast will stop if it hits the box or if it travels the given maximum distance.
+     * direction. The ray cast will stop if it hits the box or if it travels the given maximum distance.
      *
      * @return The result of the raycast, or null if no intersection was found.
      */
@@ -147,37 +147,11 @@ object RayCast {
             (dir.z * time) + start.z()
         )
         if (!validateVector(hitPosition)) return null
-    
+
         val distance = start.distance(hitPosition)
         if (distance.isNaN() || distance.isInfinite()) return null
 
         return Intersection(hitPosition, toBlockPosition(hitPosition, hitFace), hitFace, distance)
-    }
-
-    /**
-     * Attempts to find the nearest intersection of the given items.
-     */
-    fun <Type : IIntersectable> findNearestIntersection(items: List<Type>, start: Vector3dc, direction: Vector3dc, maxDist: Double): TypedIntersection<Type>? {
-        if (items.isEmpty()) return null
-        val intersectionResults = ArrayList<TypedIntersection<Type>>()
-        for (item in items) {
-            var lowestDistance: Double = Double.MAX_VALUE
-            var bestIntersection: Intersection? = null
-
-            for (box in item.boundingBoxes) {
-                val result = intersection(box, start, direction, maxDist) ?: continue
-                if (result.distance < lowestDistance) {
-                    lowestDistance = result.distance
-                    bestIntersection = result
-                }
-            }
-
-            if (bestIntersection != null) {
-                intersectionResults.add(TypedIntersection(item, bestIntersection))
-                break
-            }
-        }
-        return intersectionResults.minByOrNull { it.intersection.distance }
     }
 
     private fun toBlockPosition(hitPosition: Vector3d, hitFace: CubeFace): Vector3i {

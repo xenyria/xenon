@@ -4,6 +4,9 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import java.awt.Color
 
+/**
+ * Colors for each axis. (3D space)
+ */
 val AXIS_X_COLOR = Color(255, 64, 64)
 val AXIS_Y_COLOR = Color(64, 255, 64)
 val AXIS_Z_COLOR = Color(64, 64, 255)
@@ -20,7 +23,13 @@ fun getAxisColor(axis: Axis): Color {
     return requireNotNull(AXIS_COLORS[axis]) { "Encountered unknown axis $axis" }
 }
 
-enum class Axis(positive: Vector3dc, negative: Vector3dc) {
+/**
+ * Enum for X, Y and Z axes, including their positive and negative direction vectors.
+ */
+enum class Axis(
+    positive: Vector3dc,
+    negative: Vector3dc
+) {
 
     X(Vector3d(1.0, 0.0, 0.0), Vector3d(-1.0, 0.0, 0.0)),
     Y(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, -1.0, 0.0)),

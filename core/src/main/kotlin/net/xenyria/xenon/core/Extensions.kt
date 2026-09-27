@@ -7,7 +7,12 @@ import org.json.JSONObject
 import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.nio.charset.StandardCharsets
 import java.util.*
+
+/**
+ * Extension functions for reading and writing various data types to and from DataInputStream and DataOutputStream.
+ */
 
 fun DataInputStream.readVec3F(): Vector3dc {
     return Vector3d(readFloat().toDouble(), readFloat().toDouble(), readFloat().toDouble())
@@ -138,6 +143,19 @@ fun JSONObject.getColor(name: String): Color {
         obj.getInt("b"),
         obj.getInt("a")
     )
+}
+
+fun DataOutputStream.writeString(string: String) {
+    val bytes = string.toByteArray(StandardCharsets.UTF_8)
+    writeVarInt(bytes.size)
+    write(bytes)
+}
+
+fun DataInputStream.readString(): String {
+    val length = readVarInt()
+    val bytes = ByteArray(length)
+    readFully(bytes)
+    return String(bytes, StandardCharsets.UTF_8)
 }
 
 fun DataOutputStream.writeByteBitSet(vararg varargs: Boolean) {

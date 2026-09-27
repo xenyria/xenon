@@ -3,11 +3,11 @@ package net.xenyria.xenon.forklift.editor.state.rotate
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.EditorMode
 import net.xenyria.xenon.forklift.editor.GizmoRotationHelper
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.input.MouseButtonEvent
 import net.xenyria.xenon.forklift.editor.state.*
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.gizmo.getAxisEditorColor
 import net.xenyria.xenon.forklift.render.multiplyColor
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
@@ -22,8 +22,12 @@ import kotlin.math.abs
 const val ROTATION_GIZMO_RADIUS = 0.75
 const val ROTATION_GIZMO_LINE_WIDTH = 8.0F
 
-class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game, target) {
+/**
+ * Editor state for rotating a target.
+ */
+class RotateState(game: IEditorGameClient, target: IEditorTarget) : IEditorState(game, target) {
 
+    override val type: EditorMode = EditorMode.ROTATE
     private val rotator = GizmoRotator(game, target)
 
     fun isAxisAvailable(axis: Axis): Boolean {
@@ -31,13 +35,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
         return target.supportedRotationAxes.contains(axis)
     }
 
-    private fun getRingRotation(axis: Axis): Float {
-        if (axis == Axis.Z) return 90.0F
-        if (axis == Axis.X) return if (target.rotationMode == RotationMode.YAW_PITCH) target.rotation.y.toFloat() else 0.0F
-        return 0.0F
-    }
-
-    override fun render(renderer: IGameRenderer, isSelected: Boolean, isTransparent: Boolean) {
+    override fun extract(renderer: IGameRenderContext, isSelected: Boolean, isTransparent: Boolean) {
         val hoveringAxis = getSelectedAxis()
         if (!isSelected) rotator.resetSelectedAxis()
 
@@ -45,7 +43,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
 
         val editingAxis = rotator.editingAxis
         if (isAxisAvailable(Axis.Y) && (editingAxis == null || editingAxis === Axis.Y)) {
-            // Y axis
+            // Y-axis
             var color = getAxisEditorColor(Axis.Y, hoveringAxis == Axis.Y, rotator.editingAxis === Axis.Y)
             color = Color(color.red, color.green, color.blue, alpha)
             renderer.drawPrimitives(
@@ -61,7 +59,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
             )
         }
         if (isAxisAvailable(Axis.X) && (editingAxis == null || editingAxis === Axis.X)) {
-            // X axis
+            // X-axis
             var color = getAxisEditorColor(Axis.X, hoveringAxis == Axis.X, editingAxis === Axis.X)
             color = Color(color.red, color.green, color.blue, alpha)
             renderer.drawPrimitives(
@@ -70,7 +68,7 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
             )
         }
         if (isAxisAvailable(Axis.Z) && (editingAxis == null || editingAxis === Axis.Z)) {
-            // Z axis
+            // Z-axis
             var color = getAxisEditorColor(Axis.Z, hoveringAxis == Axis.Z, editingAxis === Axis.Z)
             color = Color(color.red, color.green, color.blue, alpha)
             renderer.drawPrimitives(
@@ -128,26 +126,24 @@ class RotateState(game: IGameClient, target: IEditorTarget) : IEditorState(game,
         return rotator.querySelectedAxis()
     }
 
-    override fun onInteract(event: MouseButtonEvent): GizmoInteractionResult {
-        return rotator.onInteract(event)
+    override fun onMouseButtonEvent(event: MouseButtonEvent): GizmoInteractionResult {
+        return rotator.onMouseButtonEvent(event)
     }
 
-    override fun handleMouseMovement(movement: Vector2d) {
-        rotator.onMouseMove(game)
+    override fun onMouseMovement(movement: Vector2d) {
+        rotator.onMouseMovement(client)
     }
-
-    override val type: EditorMode = EditorMode.ROTATE
 
     private fun appendEditingModifiers(): String {
         val modifiers = ArrayList<String>()
-        if (game.hasControlDown()) modifiers.add("Grid")
-        if (game.hasShiftDown()) modifiers.add("Fine")
+        if (client.hasControlDown()) modifiers.add("Grid")
+        if (client.hasShiftDown()) modifiers.add("Fine")
         return if (modifiers.isEmpty()) "" else " (" + java.lang.String.join(", ", modifiers) + ")"
     }
 
     override fun getStatus(): Message? {
         val axis = rotator.editingAxis
-        if (game.editor.isSelected(target.uuid) && axis != null) {
+        if (client.editorState.isSelected(target.uuid) && axis != null) {
             val effectiveDelta = rotator.getEffectiveRotation()
             val delta: Double = when (axis) {
                 Axis.X -> effectiveDelta.x

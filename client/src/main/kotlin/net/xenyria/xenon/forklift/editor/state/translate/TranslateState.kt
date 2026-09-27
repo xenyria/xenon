@@ -1,12 +1,14 @@
+@file:Suppress("DuplicatedCode")
+
 package net.xenyria.xenon.forklift.editor.state.translate
 
 import net.xenyria.xenon.core.*
 import net.xenyria.xenon.forklift.editor.EditorMode
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.forklift.editor.state.IEditorCommonState
 import net.xenyria.xenon.forklift.editor.state.MODIFIERS_COLOR
 import net.xenyria.xenon.forklift.editor.target.IEditorTarget
-import net.xenyria.xenon.forklift.render.gizmo.AxisRenderType
+import net.xenyria.xenon.forklift.render.gizmo.AxisTipType
 import net.xenyria.xenon.forklift.render.roundToNearestMultiple
 import net.xenyria.xenon.message.Message
 import net.xenyria.xenon.message.MessageComponent
@@ -16,30 +18,30 @@ import kotlin.math.abs
 private const val DEFAULT_TRANSLATION_SENSITIVITY = 0.0035
 private const val DEFAULT_TRANSLATION_FINE_SENSITIVITY = 0.00125
 
-class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
+class TranslateState(game: IEditorGameClient, target: IEditorTarget) : IEditorCommonState(game, target) {
 
     private var currentTargetPosition: Vector3d = Vector3d(0.0)
-    override val renderAxisType: AxisRenderType = AxisRenderType.CONE
+    override val renderAxisType: AxisTipType = AxisTipType.CONE
 
     override fun shouldRotateGizmo(): Boolean {
         return false
     }
 
-    fun getSnapValue(client: IGameClient): Double {
+    fun getSnapValue(): Double {
         return client.forkliftConfig.translationGridSnap
     }
 
     @Synchronized
     override fun moveByDelta(axis: Axis, displacement: Double) {
         val sensitivity =
-            if (game.hasShiftDown()) DEFAULT_TRANSLATION_FINE_SENSITIVITY else DEFAULT_TRANSLATION_SENSITIVITY
+            if (client.hasShiftDown()) DEFAULT_TRANSLATION_FINE_SENSITIVITY else DEFAULT_TRANSLATION_SENSITIVITY
         val displacement = displacement * (sensitivity * -1)
 
         val delta = axis.positive.mul(displacement)
         val newPosition = Vector3d(currentTargetPosition).add(delta)
 
-        if (game.hasControlDown()) {
-            target.position = roundToNearestMultiple(newPosition, getSnapValue(game), axis)
+        if (client.hasControlDown()) {
+            target.position = roundToNearestMultiple(newPosition, getSnapValue(), axis)
         } else {
             target.position = newPosition
         }
@@ -48,8 +50,8 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
 
     private fun appendEditingModifiers(): String {
         val modifiers = ArrayList<String>()
-        if (game.hasControlDown()) modifiers.add("Grid")
-        if (game.hasShiftDown()) modifiers.add("Fine")
+        if (client.hasControlDown()) modifiers.add("Grid")
+        if (client.hasShiftDown()) modifiers.add("Fine")
         return if (modifiers.isEmpty()) "" else " (" + modifiers.joinToString(", ") + ")"
     }
 
@@ -63,8 +65,8 @@ class TranslateState(game: IGameClient, target: IEditorTarget) : IEditorCommonSt
     @Synchronized
     override fun getStatus(): Message? {
         val axis = getEditingAxis()
-        if (game.editor.isSelected(target.uuid) && axis != null) {
-            val effectiveDelta = deltaOf(target.position, previousPosition!!)
+        if (client.editorState.isSelected(target.uuid) && axis != null) {
+            val effectiveDelta = deltaOf(previousPosition!!, target.position)
             val delta = getVectorComponent(axis, effectiveDelta)
             val sign = delta < 0
             val signStr = if (sign) "-" else "+"

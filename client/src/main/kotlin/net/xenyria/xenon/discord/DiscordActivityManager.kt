@@ -1,37 +1,40 @@
 package net.xenyria.xenon.discord
 
+/**
+ * Manages the Discord activity for a client.
+ */
 class DiscordActivityManager {
 
-    private var _api: DiscordAPI? = null
-    private var _appId: Long? = null
-    private var _lastActivity: ActivityData? = null
+    private var api: DiscordAPI? = null
+    private var appId: Long? = null
+    private var lastActivity: ActivityData? = null
 
     @Synchronized
     private fun getLastActivity(): ActivityData? {
-        return _lastActivity
+        return lastActivity
     }
 
     @Synchronized
     fun updateAppId(appId: Long) {
-        _appId = appId
+        this.appId = appId
     }
 
     @Synchronized
     fun update(data: ActivityData) {
-        val appId = _appId ?: return
-        if (_api == null) {
+        val appId = appId ?: return
+        if (api == null) {
             val api = DiscordAPI(appId)
             api.activitySupplier = { getLastActivity() ?: data }
             api.start()
-            _api = api
+            this.api = api
         }
-        _lastActivity = data
+        lastActivity = data
     }
 
     @Synchronized
     fun stop() {
-        _api?.stop()
-        _api = null
+        api?.stop()
+        api = null
     }
 
 }

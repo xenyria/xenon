@@ -5,6 +5,9 @@ import java.awt.Color
 val FORKLIFT_COLOR = Color(227, 103, 36)
 val TEXT_COLOR = Color(219, 182, 162)
 
+/**
+ * Helper class for formatting messages related to Forklift.
+ */
 object MessageFormatter {
 
     fun formatForkliftMessage(text: String): Message {

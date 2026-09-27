@@ -1,6 +1,8 @@
 package net.xenyria.xenon.protocol.clientbound.overlay
 
+import net.xenyria.xenon.core.readString
 import net.xenyria.xenon.core.readVarInt
+import net.xenyria.xenon.core.writeString
 import net.xenyria.xenon.core.writeVarInt
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.XenonPacketRegistry
@@ -22,7 +24,7 @@ class ClientboundRemoveOverlaysPacket() : IXenonPacket(XenonPacketRegistry.CLIEN
     override fun deserialize(input: DataInputStream) {
         val overlayIds = ArrayList<String>()
         repeat(input.readVarInt()) {
-            overlayIds.add(input.readUTF())
+            overlayIds.add(input.readString())
         }
         this.overlays = overlayIds
     }
@@ -30,7 +32,7 @@ class ClientboundRemoveOverlaysPacket() : IXenonPacket(XenonPacketRegistry.CLIEN
     override fun serialize(output: DataOutputStream) {
         output.writeVarInt(overlays.size)
         for (overlay in overlays) {
-            output.writeUTF(overlay)
+            output.writeString(overlay)
         }
     }
 

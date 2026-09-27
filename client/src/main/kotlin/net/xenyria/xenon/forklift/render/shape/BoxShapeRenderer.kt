@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.render.shape
 
 import net.xenyria.xenon.core.makeCenteredBox
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.IShapeRenderer
 import net.xenyria.xenon.forklift.render.primitive.BoxPrimitive
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
@@ -13,9 +13,12 @@ import kotlin.math.max
 
 const val LINE_WIDTH = 4.0F
 
+/**
+ * Renderer implementation for box shapes.
+ */
 object BoxShapeRenderer : IShapeRenderer<BoxShape> {
 
-    private fun isVisible(renderer: IGameRenderer, shape: BoxShape): Boolean {
+    private fun isVisible(renderer: IGameRenderContext, shape: BoxShape): Boolean {
         val boxCenter = Vector3d(shape.position).add(Vector3d(shape.properties.dimensions).mul(0.5))
         val box = makeCenteredBox(
             Vector3d(boxCenter.x, boxCenter.y, boxCenter.z),
@@ -25,19 +28,22 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
         return renderer.isInCameraFrustum(box)
     }
 
-    private fun renderOutline(renderer: IGameRenderer, shape: BoxShape) {
+    private fun renderOutline(renderer: IGameRenderContext, shape: BoxShape) {
         val min = shape.position
         val max = Vector3d(shape.position).add(Vector3d(shape.properties.dimensions))
 
         // Draw lines
         val lines = ArrayList<LinePrimitive>()
+        // Bottom
         lines.addAll(getSurface(min, max, shape.properties.outlineColor, min.y(), LINE_WIDTH))
+        // Top
         lines.addAll(getSurface(min, max, shape.properties.outlineColor, max.y, LINE_WIDTH))
+        // Corners
         lines.addAll(getCorners(min, max, shape.properties.outlineColor, LINE_WIDTH))
         renderer.drawPrimitives(lines, shape.properties.visibleThroughWalls)
     }
 
-    override fun drawShape(renderer: IGameRenderer, shape: BoxShape): Boolean {
+    override fun extract(renderer: IGameRenderContext, shape: BoxShape): Boolean {
         if (!isVisible(renderer, shape)) return false
 
         if (shape.properties.onlyRenderOutline) {
@@ -51,6 +57,9 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
         return true
     }
 
+    /**
+     * Helper class for extracting the corners of a box for rendering its outline.
+     */
     private fun getCorners(
         min: Vector3dc, max: Vector3dc, outlineColor: Color,
         lineWidth: Float
@@ -79,6 +88,9 @@ object BoxShapeRenderer : IShapeRenderer<BoxShape> {
         return lines
     }
 
+    /**
+     * Helper class for extracting the surface of a box for rendering its outline.
+     */
     private fun getSurface(
         min: Vector3dc, max: Vector3dc,
         outlineColor: Color, yToUse: Double,

@@ -4,14 +4,14 @@ import net.xenyria.xenon.demo.XenonDemoPlugin
 import net.xenyria.xenon.demo.player.XenonPlayer
 import net.xenyria.xenon.demo.player.XenonPlayerManager
 import net.xenyria.xenon.forklift.overlay.OverlayAnchor
-import net.xenyria.xenon.forklift.overlay.TextOverlayData
+import net.xenyria.xenon.forklift.overlay.TextOverlay
 import net.xenyria.xenon.protocol.clientbound.overlay.ClientboundRemoveOverlaysPacket
 import net.xenyria.xenon.protocol.clientbound.overlay.ClientboundUpdateOverlaysPacket
 import org.bukkit.Bukkit
 
 object XenonOverlays {
 
-    private val _overlays = ArrayList<TextOverlayData>()
+    private val _overlays = ArrayList<TextOverlay>()
     private var _elapsedTicks = 0L
 
     fun startUpdateLoop() {
@@ -33,8 +33,8 @@ object XenonOverlays {
 
     fun toggle() {
         if (_overlays.isEmpty()) {
-            val overlay2 = TextOverlayData("test_overlay2", 1.0, "", OverlayAnchor.TOP_RIGHT, offsetY = 1, offsetX = -1)
-            val overlay1 = TextOverlayData("test_overlay1", 1.0, "", OverlayAnchor.TOP_RIGHT, offsetY = 6, offsetX = -1)
+            val overlay2 = TextOverlay("test_overlay2", 1.0, "", OverlayAnchor.TOP_RIGHT, offsetY = 1, offsetX = -1)
+            val overlay1 = TextOverlay("test_overlay1", 1.0, "", OverlayAnchor.TOP_RIGHT, offsetY = 6, offsetX = -1)
             _overlays.add(overlay1)
             _overlays.add(overlay2)
 
@@ -50,7 +50,7 @@ object XenonOverlays {
         player.sendXenonMessage(ClientboundUpdateOverlaysPacket(_overlays))
     }
 
-    fun add(overlay: TextOverlayData) {
+    fun add(overlay: TextOverlay) {
         _overlays.add(overlay)
         XenonPlayerManager.activePlayers.forEach {
             it.sendXenonMessage(ClientboundUpdateOverlaysPacket(listOf(overlay)))
@@ -63,7 +63,7 @@ object XenonOverlays {
         }
     }
 
-    fun remove(overlay: TextOverlayData) {
+    fun remove(overlay: TextOverlay) {
         _overlays.remove(overlay)
         XenonPlayerManager.activePlayers.forEach {
             it.sendXenonMessage(ClientboundRemoveOverlaysPacket(listOf(overlay.id)))

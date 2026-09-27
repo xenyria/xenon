@@ -1,6 +1,8 @@
 package net.xenyria.xenon.protocol.clientbound.shape
 
+import net.xenyria.xenon.core.readString
 import net.xenyria.xenon.core.readVarInt
+import net.xenyria.xenon.core.writeString
 import net.xenyria.xenon.core.writeVarInt
 import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.XenonPacketRegistry
@@ -24,14 +26,14 @@ class ClientboundRemoveShapesPacket() : IXenonPacket(XenonPacketRegistry.CLIENTB
         val amount = input.readVarInt()
         val ids = ArrayList<String>()
         repeat(amount) {
-            ids.add(input.readUTF())
+            ids.add(input.readString())
         }
     }
 
     override fun serialize(output: DataOutputStream) {
         output.writeVarInt(shapeIds.size)
         for (id in shapeIds) {
-            output.writeUTF(id)
+            output.writeString(id)
         }
     }
 

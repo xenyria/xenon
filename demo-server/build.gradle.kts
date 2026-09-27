@@ -8,7 +8,7 @@ plugins {
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 group = "net.xenyria.xenon"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
     mavenCentral()

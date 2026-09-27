@@ -8,6 +8,9 @@ import dev.isxander.yacl3.api.controller.EnumControllerBuilder
 import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder
 import net.minecraft.network.chat.Component
 
+/**
+ * Object that hooks into YetAnotherConfigLib to provide a configuration GUI for Xenon.
+ */
 object Settings {
 
     val config: XenonConfig get() = XenonClientConfig.config
@@ -18,15 +21,21 @@ object Settings {
 
     class Builder {
 
-        private val gameplayCategory = ConfigCategory.createBuilder().name(Component.translatable("xenon_config_tab_gameplay"))
+        private val gameplayCategory =
+            ConfigCategory.createBuilder().name(Component.translatable("xenon_config_tab_gameplay"))
         private val miscCategory = ConfigCategory.createBuilder().name(Component.translatable("xenon_config_tab_misc"))
-        private val developerCategory = ConfigCategory.createBuilder().name(Component.translatable("xenon_config_tab_developer"))
+        private val developerCategory =
+            ConfigCategory.createBuilder().name(Component.translatable("xenon_config_tab_developer"))
 
         private val gameplayOptionGroup = OptionGroup.createBuilder()
         private val miscOptionGroup = OptionGroup.createBuilder()
         private val developerOptionGroup = OptionGroup.createBuilder()
 
-        private fun makeCheckbox(key: String, getter: () -> Boolean, setter: XenonConfig.(value: Boolean) -> Unit): Option<Boolean> {
+        private fun makeCheckbox(
+            key: String,
+            getter: () -> Boolean,
+            setter: XenonConfig.(value: Boolean) -> Unit
+        ): Option<Boolean> {
             return Option.createBuilder<Boolean>()
                 .name(Component.translatable(key))
                 .binding(
@@ -63,29 +72,38 @@ object Settings {
                     .build()
             )
             miscOptionGroup.option(
-                Option.createBuilder<RichPresenceMode>()
+                Option.createBuilder<DiscordActivityMode>()
                     .name(Component.translatable("xenon_discord_activity"))
                     .binding(
-                        RichPresenceMode.TRUSTED_ONLY,
+                        DiscordActivityMode.TRUSTED_ONLY,
                         { config.misc.activityMode },
                         {
                             XenonClientConfig.mutateConfig { XenonClientConfig.setDiscordActivityMode(it) }
                         })
-                    .controller { option: Option<RichPresenceMode> ->
+                    .controller { option: Option<DiscordActivityMode> ->
                         EnumControllerBuilder.create(option)
                             .formatValue { Component.translatable(it.key) }
-                            .enumClass(RichPresenceMode::class.java)
+                            .enumClass(DiscordActivityMode::class.java)
                     }
                     .build()
             )
             developerOptionGroup.option(
-                makeCheckbox("xenon_forklift", { config.developer.enableGizmos }, { XenonClientConfig.setGizmosEnabled(it) })
+                makeCheckbox(
+                    "xenon_forklift",
+                    { config.developer.enableGizmos },
+                    { XenonClientConfig.setGizmosEnabled(it) })
             )
             developerOptionGroup.option(
-                makeCheckbox("xenon_debug_shapes", { config.developer.enableShapes }, { config.developer.enableShapes = it })
+                makeCheckbox(
+                    "xenon_debug_shapes",
+                    { config.developer.enableShapes },
+                    { config.developer.enableShapes = it })
             )
             developerOptionGroup.option(
-                makeCheckbox("xenon_debug_overlays", { config.developer.enableOverlays }, { config.developer.enableOverlays = it })
+                makeCheckbox(
+                    "xenon_debug_overlays",
+                    { config.developer.enableOverlays },
+                    { config.developer.enableOverlays = it })
             )
 
             gameplayCategory.group(gameplayOptionGroup.build())

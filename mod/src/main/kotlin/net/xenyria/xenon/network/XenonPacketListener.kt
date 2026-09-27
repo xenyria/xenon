@@ -7,14 +7,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.xenyria.xenon.forklift.network.ForkliftPacketHandler
 import net.xenyria.xenon.forklift.network.XenonPacketHandler
-import net.xenyria.xenon.protocol.IXenonPacket
 import net.xenyria.xenon.protocol.parsePacket
 import net.xenyria.xenon.xenon
 import java.io.ByteArrayInputStream
-
-fun interface IPacketListener<Type : IXenonPacket> {
-    fun onPacket(packet: Type)
-}
 
 object XenonPacketListener {
 
@@ -29,7 +24,7 @@ object XenonPacketListener {
             val packet = parsePacket(ByteArrayInputStream(data.bytes))
 
             val xenon = xenon
-            val editor = xenon.getForkliftOrNull()?.editor
+            val editor = xenon.getForkliftOrNull()?.editorClient
 
             if (XenonPacketHandler.handlePacket(xenon.client, packet))
                 return@registerGlobalReceiver

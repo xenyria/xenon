@@ -1,22 +1,25 @@
 package net.xenyria.xenon.forklift.editor.overlay
 
-import net.xenyria.xenon.forklift.editor.IGameClient
-import net.xenyria.xenon.forklift.overlay.TextOverlayData
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
+import net.xenyria.xenon.forklift.overlay.TextOverlay
 
-class EditorOverlayManager(val client: IGameClient) {
+/**
+ * Manages text overlays for an editor client.
+ */
+class EditorOverlayManager(val client: IEditorGameClient) {
 
-    private val _overlays = ArrayList<TextOverlayData>()
+    private val overlays = ArrayList<TextOverlay>()
 
     @Synchronized
     fun reset() {
-        _overlays.clear()
-        client.renderOverlays(_overlays)
+        overlays.clear()
+        client.renderOverlays(overlays)
     }
 
     @Synchronized
-    fun updateOverlays(newOverlays: List<TextOverlayData>) {
+    fun updateOverlays(newOverlays: List<TextOverlay>) {
         val newOverlayMap = newOverlays.associateBy { it.id }
-        val newList = ArrayList<TextOverlayData>(_overlays.size)
+        val newList = ArrayList<TextOverlay>(overlays.size)
 
         for (overlay in newOverlays) {
             val updatedOverlay = newOverlayMap[overlay.id]
@@ -27,15 +30,15 @@ class EditorOverlayManager(val client: IGameClient) {
             }
         }
 
-        _overlays.clear()
-        _overlays.addAll(newList)
-        client.renderOverlays(_overlays)
+        overlays.clear()
+        overlays.addAll(newList)
+        client.renderOverlays(overlays)
     }
 
     @Synchronized
     fun removeOverlays(overlays: Set<String>) {
-        _overlays.removeIf { it.id in overlays }
-        client.renderOverlays(_overlays)
+        this.overlays.removeIf { it.id in overlays }
+        client.renderOverlays(this.overlays)
     }
 
 

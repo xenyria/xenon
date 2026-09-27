@@ -11,7 +11,7 @@ class SetCameraCommand : BasicCommand {
         val sender = commandSourceStack.sender
         if (sender !is Player) return
         if (args.size != 1) {
-            sender.sendMessage("/set_camera <perspective>")
+            sender.sendMessage("/set_camera <FIRST_PERSON|THIRD_PERSON_FRONT|THIRD_PERSON_BACK>")
             return
         }
 

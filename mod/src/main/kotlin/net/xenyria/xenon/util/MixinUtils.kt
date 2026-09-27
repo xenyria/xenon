@@ -4,6 +4,9 @@ import net.xenyria.xenon.xenon
 import org.joml.Matrix3x2fStack
 import org.joml.Vector2f
 
+/**
+ * Helper functions for mixins.
+ */
 const val HUD_OFFSET = 64
 const val CHAT_OFFSET = -18
 

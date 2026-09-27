@@ -34,7 +34,7 @@ object XenonClientConfig {
         }
 
     @Synchronized
-    fun setDiscordActivityMode(enabled: RichPresenceMode) {
+    fun setDiscordActivityMode(enabled: DiscordActivityMode) {
         mutateConfig { config.misc.activityMode = enabled }
 
         val session = xenon.getSessionOrNull() ?: return
@@ -47,9 +47,9 @@ object XenonClientConfig {
 
         val forklift = xenon.getForkliftOrNull() ?: return
         if (!enabled) {
-            if (forklift.editor.isActive) {
-                forklift.editor.leaveEditMode()
-                forklift.editor.leaveDragMode()
+            if (forklift.editorClient.isActive) {
+                forklift.editorClient.leaveEditMode()
+                forklift.editorClient.leaveDragMode()
             }
         }
     }

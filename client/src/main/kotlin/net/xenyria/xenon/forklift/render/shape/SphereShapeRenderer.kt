@@ -1,7 +1,7 @@
 package net.xenyria.xenon.forklift.render.shape
 
 import net.xenyria.xenon.core.makeCenteredBox
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.IShapeRenderer
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
 import net.xenyria.xenon.forklift.render.primitive.SphereBuilder
@@ -10,7 +10,7 @@ import net.xenyria.xenon.shape.impl.SphereShape
 
 object SphereShapeRenderer : IShapeRenderer<SphereShape> {
 
-    override fun drawShape(renderer: IGameRenderer, shape: SphereShape): Boolean {
+    override fun extract(renderer: IGameRenderContext, shape: SphereShape): Boolean {
         val box = makeCenteredBox(shape.position, shape.properties.radius * 2.0, shape.properties.radius * 2.0)
         if (!renderer.isInCameraFrustum(box)) return false
 

@@ -1,6 +1,6 @@
 package net.xenyria.xenon.forklift.render.shape
 
-import net.xenyria.xenon.forklift.render.IGameRenderer
+import net.xenyria.xenon.forklift.render.IGameRenderContext
 import net.xenyria.xenon.forklift.render.IShapeRenderer
 import net.xenyria.xenon.forklift.render.primitive.IRenderPrimitive
 import net.xenyria.xenon.forklift.render.primitive.LinePrimitive
@@ -10,6 +10,9 @@ import org.joml.Vector3d
 
 const val POLYGON_LINE_THICKNESS = 4.0F
 
+/**
+ * Renderer implementation for polygon shape outlines.
+ */
 object PolygonShapeRenderer : IShapeRenderer<PolygonShape> {
 
     private fun getPolygonVerticalSurfaceVectors(shape: PolygonShape, y: Double): List<Vector3d> {
@@ -20,7 +23,12 @@ object PolygonShapeRenderer : IShapeRenderer<PolygonShape> {
         return surfaceVectors
     }
 
-    private fun drawPolygonSurface(renderer: IGameRenderer, properties: PolygonShapeProperties, surfaceVectors: List<Vector3d>, visibleThroughWalls: Boolean) {
+    private fun drawPolygonSurface(
+        renderer: IGameRenderContext,
+        properties: PolygonShapeProperties,
+        surfaceVectors: List<Vector3d>,
+        visibleThroughWalls: Boolean
+    ) {
         val linesToDraw = ArrayList<LinePrimitive>()
         for (i in surfaceVectors.indices) {
             val point = surfaceVectors[i]
@@ -30,15 +38,30 @@ object PolygonShapeRenderer : IShapeRenderer<PolygonShape> {
         renderer.drawPrimitives(linesToDraw, visibleThroughWalls)
     }
 
-    private fun drawTopAndBottomFaces(access: IGameRenderer, polygonShape: PolygonShape, maxY: Double, minY: Double) {
+    private fun drawTopAndBottomFaces(
+        access: IGameRenderContext,
+        polygonShape: PolygonShape,
+        maxY: Double,
+        minY: Double
+    ) {
         val topSurfaceVectors = getPolygonVerticalSurfaceVectors(polygonShape, maxY)
         val bottomSurfaceVectors = getPolygonVerticalSurfaceVectors(polygonShape, minY)
 
-        drawPolygonSurface(access, polygonShape.properties, topSurfaceVectors, polygonShape.properties.visibleThroughWalls)
-        drawPolygonSurface(access, polygonShape.properties, bottomSurfaceVectors, polygonShape.properties.visibleThroughWalls)
+        drawPolygonSurface(
+            access,
+            polygonShape.properties,
+            topSurfaceVectors,
+            polygonShape.properties.visibleThroughWalls
+        )
+        drawPolygonSurface(
+            access,
+            polygonShape.properties,
+            bottomSurfaceVectors,
+            polygonShape.properties.visibleThroughWalls
+        )
     }
 
-    override fun drawShape(renderer: IGameRenderer, shape: PolygonShape): Boolean {
+    override fun extract(renderer: IGameRenderContext, shape: PolygonShape): Boolean {
         val box = shape.getCullingBox().grow(0.25, 0.25, 0.25)
         if (!renderer.isInCameraFrustum(box)) return false
 

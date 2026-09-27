@@ -2,14 +2,20 @@ package net.xenyria.xenon
 
 import net.xenyria.xenon.camera.CameraPerspective
 import net.xenyria.xenon.config.CameraMode
-import net.xenyria.xenon.config.RichPresenceMode
+import net.xenyria.xenon.config.DiscordActivityMode
 import net.xenyria.xenon.discord.ActivityData
 import net.xenyria.xenon.discord.DiscordActivityManager
 import net.xenyria.xenon.forklift.Forklift
-import net.xenyria.xenon.forklift.editor.IGameClient
+import net.xenyria.xenon.forklift.editor.IEditorGameClient
 import net.xenyria.xenon.util.getCurrentServer
 
-class Session(private val client: IGameClient, editModeAvailable: Boolean) {
+/**
+ * Represents a session on a Minecraft server.
+ */
+class Session(
+    private val client: IEditorGameClient,
+    editModeAvailable: Boolean
+) {
 
     val isTrusted: Boolean = TrustedServers.isTrusted(getCurrentServer())
     val forklift: Forklift? = if (editModeAvailable) Forklift(client) else null
@@ -25,8 +31,8 @@ class Session(private val client: IGameClient, editModeAvailable: Boolean) {
     @Synchronized
     fun canApplyActivity(): Boolean {
         val mode = client.xenonConfig.misc.activityMode
-        if (mode == RichPresenceMode.NONE) return false
-        if (mode == RichPresenceMode.TRUSTED_ONLY) return isTrusted
+        if (mode == DiscordActivityMode.NONE) return false
+        if (mode == DiscordActivityMode.TRUSTED_ONLY) return isTrusted
         return true
     }
 
