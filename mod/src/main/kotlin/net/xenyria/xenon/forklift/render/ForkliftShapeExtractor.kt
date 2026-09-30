@@ -2,7 +2,6 @@
 
 package net.xenyria.xenon.forklift.render
 
-import com.mojang.renderpearl.api.pipeline.RenderPipeline
 import net.minecraft.network.chat.Component
 import net.xenyria.xenon.config.XenonConfig
 import net.xenyria.xenon.forklift.editor.RenderableGizmo
@@ -33,11 +32,7 @@ data class RenderPass(
     val pipelineType: RenderPipelineType, // Which pipeline to use for rendering the provided primitives
     val primitives: List<IRenderPrimitive>,
     val holograms: List<Hologram>
-) {
-    fun getPipeline(): RenderPipeline {
-        return XenonRenderPipelines.getPipeline(pipelineType)
-    }
-}
+)
 
 object ForkliftShapeExtractor {
 

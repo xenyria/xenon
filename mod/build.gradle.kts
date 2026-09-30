@@ -66,9 +66,16 @@ dependencies {
     implementation("com.terraformersmc:modmenu:${modmenuVersion}")
 
     shadow(libs.kotlin.serialization.json)
+    implementation(libs.kotlin.serialization.json)
+
     shadow(libs.discord.game.sdk4j)
+    implementation(libs.discord.game.sdk4j)
+
     shadow(project(":core"))
+    implementation(project(":core"))
+
     shadow(project(":client"))
+    implementation(project(":client"))
 }
 
 tasks.processResources {
