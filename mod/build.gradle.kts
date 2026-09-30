@@ -65,10 +65,10 @@ dependencies {
     implementation("dev.isxander:yet-another-config-lib:${yaclVersion}")
     implementation("com.terraformersmc:modmenu:${modmenuVersion}")
 
-    implementation(libs.kotlin.serialization.json)
-    implementation(libs.discord.game.sdk4j)
-    implementation(project(":core"))
-    implementation(project(":client"))
+    shadow(libs.kotlin.serialization.json)
+    shadow(libs.discord.game.sdk4j)
+    shadow(project(":core"))
+    shadow(project(":client"))
 }
 
 tasks.processResources {
@@ -103,6 +103,10 @@ tasks.jar {
 tasks.shadowJar {
     configurations = mutableListOf(project.configurations.shadow.get())
     exclude("META-INF")
+}
+
+tasks.jar {
+    dependsOn(tasks.shadowJar)
 }
 
 // configure the maven publication
